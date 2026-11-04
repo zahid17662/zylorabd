@@ -1,0 +1,22 @@
+# Render Blueprint: deploys the FastAPI backend (backend/Dockerfile).
+# Secrets are NOT stored here; Render asks for the `sync: false` values when you create the service.
+services:
+  - type: web
+    name: zylorabd-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore # closest to the Neon database (ap-southeast-1)
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL # your Neon pooler URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS # the storefront origin(s), comma-separated, no wildcard
+        value: https://zylorabd-store.netlify.app
+      - key: FRONTEND_URL
+        value: https://zylorabd-store.netlify.app
+      - key: PUBLIC_API_URL # set to this service's https address after the first deploy
+        sync: false
