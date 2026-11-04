@@ -1,0 +1,15 @@
+# Run the API locally or on a VPS:   docker compose up --build -d
+# Configuration comes from backend/.env (copy backend/.env.example and fill it in).
+# The database is Neon (hosted), so no database container is needed.
+services:
+  api:
+    build: ./backend
+    env_file: ./backend/.env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

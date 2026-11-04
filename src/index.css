@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Sans+Bengali:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  /* Latin glyphs come from Jost / Cormorant; Bangla falls through to Noto Sans Bengali */
+  --font-sans: 'Jost', 'Noto Sans Bengali', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Cormorant Garamond', 'Noto Sans Bengali', ui-serif, Georgia, serif;
+
+  /* Maison palette: warm ink, ivory and off-white product grounds */
+  --color-ink: #19110b;
+  --color-cream: #f6f5f3;
+  --color-sand: #ebe6df;
+  --color-muted: #6f6a64;
+  --color-line: #e1ddd6;
+  --color-caramel: #9c7a57;
+  --color-wine: #8e2a3b;
+
+  --animate-progress: progress 5s linear forwards;
+}
+
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: #fff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-ink);
+    color: #fff;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Small tracked caps used for labels, links and buttons */
+  .caps {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  /* Underlined text link that draws in on hover */
+  .link-line {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    padding-bottom: 3px;
+    transition: background-size 0.35s ease;
+  }
+  .link-line:hover {
+    background-size: 0 1px;
+    background-position: 100% 100%;
+  }
+}

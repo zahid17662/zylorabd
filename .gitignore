@@ -1,0 +1,27 @@
+# dependencies / build
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# secrets: never commit real credentials (only *.example files are tracked)
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+*.pem
+*.key
+
+# tooling / local state
+.ecc/
+.agents/
+.figma/
+*.zip
+*.log
+.DS_Store
