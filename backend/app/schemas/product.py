@@ -65,10 +65,26 @@ class ProductIn(BaseModel):
 class ProductPatch(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
     description: str | None = None
-    category: str | None = None
+    category: str | None = Field(default=None, min_length=1, max_length=80)
     base_price: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
     discount_percent: Decimal | None = Field(default=None, ge=0, le=100)
     video_url: str | None = None
     images: list[str] | None = None
     is_active: bool | None = None
     variants: list[VariantIn] | None = None  # upsert by size; stock set to the given value
+
+    @field_validator("title", "description", "category", "base_price", "discount_percent", "images", "is_active", mode="before")
+    @classmethod
+    def _not_null(cls, v):
+        # Omit a field to leave it alone; an explicit null would hit a NOT NULL column (only video_url may be cleared).
+        if v is None:
+            raise ValueError("This field cannot be null; omit it to leave it unchanged")
+        return v
+
+
+class AdminProductOut(ProductDetailOut):
+    total_stock: int
+
+
+class DeleteResultOut(BaseModel):
+    result: Literal["deleted", "archived"]

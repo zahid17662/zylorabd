@@ -110,3 +110,37 @@ class DashboardOut(BaseModel):
     online_orders: int = 0
     cod_revenue: Decimal = Decimal(0)
     online_revenue: Decimal = Decimal(0)
+
+
+class SplitRow(BaseModel):
+    key: str  # e.g. "COD", "NAGAD", "FACEBOOK", "FB_AD"
+    orders: int  # non-cancelled orders
+    revenue: Decimal  # paid, non-cancelled revenue
+
+
+class AttributionSplit(BaseModel):
+    login_channel: list[SplitRow]
+    order_source: list[SplitRow]
+
+
+class LowStockVariantOut(BaseModel):
+    product_id: uuid.UUID
+    product_title: str
+    variant_id: uuid.UUID
+    size: str
+    sku: str
+    stock_quantity: int
+
+
+class StatsOut(BaseModel):
+    total_orders: int
+    pending_orders: int  # pending + awaiting_payment
+    confirmed_orders: int
+    pending_fulfillment: int  # everything accepted but not yet shipped
+    shipped_orders: int
+    delivered_orders: int
+    cancelled_orders: int
+    total_revenue: Decimal  # payment_status == paid and order_status != cancelled
+    payment_method_split: list[SplitRow]
+    order_attribution_split: AttributionSplit
+    low_stock_variants: list[LowStockVariantOut]

@@ -20,7 +20,7 @@ All backend settings live in `backend/.env`. Copy `backend/.env.example` to `bac
 |---|---|
 | `DATABASE_URL` | Neon connection string (use the **pooler** URL). Rotate the password in the Neon console if it was ever shared. |
 | `JWT_SECRET` | Long random secret that signs logins. Generate: `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Changing it logs everyone out. |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Used once by `seed.py` to create the first admin. Change the password after first login. |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_PHONE` (optional) | Read by `python -m scripts.seed_admin`, which creates the first admin or promotes the matching existing user. Safe to re-run; it never overwrites an existing password. Change the password after first login. |
 | `CORS_ORIGINS` | Your storefront address(es), comma-separated, e.g. `https://zylora.com`. No `*`. |
 | `PUBLIC_API_URL` | The public address of the API (used in payment return/webhook URLs). |
 | `FRONTEND_URL` | The public address of the storefront. |
@@ -44,7 +44,8 @@ The schema is managed with Alembic. From the `backend/` folder:
 python -m venv .venv && .venv\Scripts\activate      # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 alembic upgrade head          # create/update tables (safe to run repeatedly)
-python seed.py                # first time only: creates the admin account + sample products
+python -m scripts.seed_admin  # creates (or promotes) the admin account; safe to re-run
+python seed.py                # optional: sample products
 ```
 
 The Docker image runs `alembic upgrade head` automatically on every start. After changing a model, create a migration with `alembic revision --autogenerate -m "describe change"`, review it, then deploy.
@@ -88,7 +89,7 @@ Share links with a `utm_source`, e.g. `https://zylora.com/?utm_source=facebook`.
 ### API on Render / Railway
 1. Create a **Web Service** from this repository, root directory `backend`, runtime **Docker** (it uses `backend/Dockerfile`).
 2. Add the environment variables from section 1. Health check path: `/health`.
-3. Deploy. Migrations run on start. Then run `python seed.py` once from the platform's shell to create the admin.
+3. Deploy. Migrations run on start. Then run `python -m scripts.seed_admin` from the platform shell to create the admin (safe to re-run).
 4. Set `PUBLIC_API_URL` to the service address and register `https://<api>/api/v1/payments/webhook` as the webhook in UddoktaPay.
 
 ### API on a VPS

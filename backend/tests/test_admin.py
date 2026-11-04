@@ -32,7 +32,7 @@ async def test_public_catalog_is_paginated_and_hides_inactive(client, make_user,
     assert listing.status_code == 200
     assert len(listing.json()["items"]) <= 5
     d = await client.delete(f"/api/v1/admin/products/{product.id}", headers=auth_headers(admin))
-    assert d.status_code == 204
+    assert d.status_code == 200 and d.json() == {"result": "deleted"}  # never ordered, so fully removed
     assert (await client.get(f"/api/v1/products/{product.id}")).status_code == 404
 
 
