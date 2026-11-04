@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Heart, Plus } from 'lucide-react'
 import { useCart } from '../cart'
 import { img, SIZES, taka, type Product, type Size } from '../data'
+import { ProductImage } from './ui/ProductImage'
 
 export function ProductCard({ product: p }: { product: Product }) {
   const { add, wishlist, toggleWish, setViewing } = useCart()
@@ -25,14 +26,15 @@ export function ProductCard({ product: p }: { product: Product }) {
   }
 
   return (
-    <li className="list-none">
-      <div className="group/thumb relative overflow-hidden bg-cream">
+    <li className="mx-auto w-full max-w-[280px] list-none">
+      <div className="group/thumb relative overflow-hidden rounded-xl bg-slate-100">
         <button onClick={() => setViewing(p)} aria-label={`View ${p.title}`} className="block w-full cursor-pointer">
-          <img
-            src={img(p.image, 700, 875)}
+          <ProductImage
+            variant="card"
+            src={img(p.image, 600, 800)}
             alt={p.title}
-            loading="lazy"
-            className={`aspect-[4/5] w-full object-cover transition duration-[1200ms] ease-out group-hover/thumb:scale-[1.04] ${outOfStock ? 'opacity-60' : ''}`}
+            className="rounded-none"
+            imgClassName={outOfStock ? 'opacity-60' : ''}
           />
         </button>
 

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Play, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { api, toProduct, type ApiProduct } from '../api'
 import { useCart } from '../cart'
 import { img, SIZES, taka, type Product, type Size } from '../data'
-
-type Media = { kind: 'image' | 'video'; src: string }
+import { MediaCarousel, type Slide } from './ui/MediaCarousel'
 
 const stockLabel = (n: number): string => (n === 0 ? 'Sold out' : n <= 5 ? `Only ${n} left` : 'In stock')
 
@@ -18,7 +17,6 @@ function Detail({ base }: { base: Product }) {
   const { add, setViewing } = useCart()
   const [p, setP] = useState<Product>(base)
   const [size, setSize] = useState<Size | null>(null)
-  const [idx, setIdx] = useState(0)
   const [nudge, setNudge] = useState(false)
 
   // Keep stock live: refresh on open and every 15 s while the page is open.
@@ -48,11 +46,11 @@ function Detail({ base }: { base: Product }) {
   // If the selected size sells out while the page is open, drop the selection.
   const chosen: Size | null = single && (p.stock[single] ?? 0) > 0 ? single : size && (p.stock[size] ?? 0) > 0 ? size : null
 
-  const media: Media[] = [
-    ...p.images.map((src): Media => ({ kind: 'image', src })),
-    ...(p.video ? [{ kind: 'video', src: p.video } as Media] : []),
+  // Photos first (they slide automatically), then the admin's short video as the last slide.
+  const slides: Slide[] = [
+    ...p.images.map((src): Slide => ({ kind: 'image', src: img(src, 800, 1000) })),
+    ...(p.video ? [{ kind: 'video', src: p.video } as Slide] : []),
   ]
-  const current = media[Math.min(idx, media.length - 1)]
   const cover = p.images[0] ? img(p.images[0], 900, 1125) : undefined
 
   const onAdd = () => {
@@ -71,7 +69,7 @@ function Detail({ base }: { base: Product }) {
         role="dialog"
         aria-modal="true"
         aria-label={p.title}
-        className="relative mx-auto grid w-full max-w-[1000px] bg-white min-[820px]:grid-cols-2"
+        className="relative mx-auto grid w-full max-w-5xl grid-cols-1 items-start gap-8 bg-white md:grid-cols-12"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -83,50 +81,12 @@ function Detail({ base }: { base: Product }) {
         </button>
 
         {/* Gallery */}
-        <div>
-          <div className="aspect-[4/5] w-full bg-cream">
-            {current?.kind === 'video' ? (
-              <video
-                key={current.src}
-                src={current.src}
-                poster={cover}
-                controls
-                playsInline
-                preload="metadata"
-                className="size-full bg-black object-contain"
-              >
-                Your browser does not support video playback.
-              </video>
-            ) : current ? (
-              <img src={img(current.src, 900, 1125)} alt={p.title} className="size-full object-cover" />
-            ) : null}
-          </div>
-          {media.length > 1 && (
-            <ul className="flex gap-2 overflow-x-auto p-3" aria-label="Product media">
-              {media.map((m, i) => (
-                <li key={m.src + i} className="shrink-0">
-                  <button
-                    onClick={() => setIdx(i)}
-                    aria-label={m.kind === 'video' ? 'Play product video' : `Show image ${i + 1}`}
-                    aria-current={i === idx}
-                    className={`relative block size-16 overflow-hidden border ${i === idx ? 'border-ink' : 'border-line'}`}
-                  >
-                    {m.kind === 'video' ? (
-                      <span className="grid size-full place-items-center bg-ink text-white">
-                        <Play className="size-5" strokeWidth={1.5} />
-                      </span>
-                    ) : (
-                      <img src={img(m.src, 120, 120)} alt="" loading="lazy" className="size-full object-cover" />
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="p-4 sm:p-6 md:col-span-5">
+          <MediaCarousel slides={slides} alt={p.title} poster={cover} />
         </div>
 
         {/* Details */}
-        <div className="flex flex-col p-6 sm:p-8">
+        <div className="flex flex-col p-6 sm:p-8 md:col-span-7">
           <p className="caps !text-[10px] text-muted">{p.category}</p>
           <h2 className="mt-2 font-serif text-[30px] leading-tight">{p.title}</h2>
           <p className="mt-3 text-[18px]">

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Minus, Plus, ShoppingBag, X } from 'lucide-react'
 import { unitPrice, useCart } from '../cart'
 import { img, taka } from '../data'
+import { ProductImage } from './ui/ProductImage'
 
 export function CartDrawer() {
   const { lines, open, setOpen, setQty, remove, subtotal, count, setCheckout } = useCart()
@@ -43,9 +44,7 @@ export function CartDrawer() {
             <ul className="flex-1 overflow-y-auto px-7">
               {lines.map((l) => (
                 <li key={l.product.id + l.size} className="flex gap-4 border-t border-line py-5">
-                  <div className="w-[88px] shrink-0 bg-cream">
-                    <img src={img(l.product.image, 180, 225)} alt="" className="aspect-[4/5] w-full object-cover" />
-                  </div>
+                  <ProductImage variant="thumb" src={img(l.product.image, 128, 160)} alt="" />
                   <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-[14px] leading-snug">{l.product.title}</p>

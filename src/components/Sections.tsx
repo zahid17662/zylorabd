@@ -5,7 +5,7 @@ import { ProductCard } from './ProductCard'
 
 export function SectionTitle({ title, sub, link }: { title: string; sub?: string; link?: { label: string; href: string } }) {
   return (
-    <div className="mb-10 text-center md:mb-14">
+    <div className="mb-5 text-center md:mb-8">
       {sub && <p className="caps mb-3 !text-[11px] text-muted">{sub}</p>}
       <h2 className="font-serif text-[32px] leading-tight font-normal md:text-[44px]">{title}</h2>
       {link && (
@@ -23,14 +23,14 @@ export function Creations() {
   const scroll = (dir: 1 | -1) => track.current?.scrollBy({ left: dir * track.current.clientWidth * 0.8, behavior: 'smooth' })
 
   return (
-    <section id="creations" className="scroll-mt-20 py-16 md:py-24">
+    <section id="creations" className="scroll-mt-20 py-8 md:py-14">
       <SectionTitle title="Explore a Selection of Zylora’s Creations" />
       <div className="relative">
         <div ref={track} className="no-scrollbar flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth px-4 md:gap-3 md:px-10">
           {creations.map((c) => (
             <a key={c.name} href="#new-arrivals" className="group w-[62%] shrink-0 snap-start sm:w-[38%] md:w-[24%] lg:w-[19%]">
               <div className="aspect-[4/5] overflow-hidden bg-cream">
-                <img src={img(c.image, 600, 750)} alt={c.name} loading="lazy" className="size-full object-cover transition duration-[1200ms] group-hover:scale-105" />
+                <img src={img(c.image, 600, 750)} alt={c.name} loading="lazy" decoding="async" className="size-full object-cover transition duration-[1200ms] group-hover:scale-105" />
               </div>
               <p className="mt-4 text-center text-[14px]">{c.name}</p>
             </a>
@@ -51,9 +51,9 @@ export function Creations() {
 
 export function ProductSection({ id, title, sub, products }: { id: string; title: string; sub: string; products: Product[] }) {
   return (
-    <section id={id} className="scroll-mt-20 px-4 py-16 md:px-10 md:py-24">
+    <section id={id} className="scroll-mt-20 px-4 py-8 md:px-10 md:py-14">
       <SectionTitle title={title} sub={sub} link={{ label: 'View all', href: `#${id}` }} />
-      <ul className="mx-auto grid max-w-[1600px] grid-cols-2 gap-x-2 gap-y-12 md:grid-cols-3 md:gap-x-3 min-[922px]:grid-cols-4">
+      <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-4 px-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4">
         {products.map((p) => (
           <ProductCard key={p.id} product={p} />
         ))}
@@ -72,7 +72,7 @@ export function EditorialSplit() {
     <section className="grid md:grid-cols-2">
       {panels.map((p) => (
         <a key={p.title} href={p.href} className="group relative block aspect-[4/5] overflow-hidden md:aspect-auto md:h-[92svh] md:max-h-[900px]">
-          <img src={img(p.image, 1200)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover transition duration-[1600ms] group-hover:scale-[1.03]" />
+          <img src={img(p.image, 1200)} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover transition duration-[1600ms] group-hover:scale-[1.03]" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           <div className="absolute inset-x-0 bottom-12 text-center text-white">
             <p className="caps !text-[11px] text-white/85">{p.kicker}</p>
@@ -87,12 +87,12 @@ export function EditorialSplit() {
 
 export function Collections() {
   return (
-    <section id="collections" className="scroll-mt-20 bg-cream px-4 py-16 md:px-10 md:py-24">
+    <section id="collections" className="scroll-mt-20 bg-cream px-4 py-8 md:px-10 md:py-14">
       <SectionTitle title="Shop by Collection" sub="Curated for you" />
       <div className="mx-auto grid max-w-[1400px] gap-3 md:grid-cols-3">
         {collections.map((c) => (
           <a key={c.name} href="#new-arrivals" className="group relative block aspect-[439/535] overflow-hidden bg-sand">
-            <img src={img(c.image, 900)} alt={c.name} loading="lazy" className="absolute inset-0 size-full object-cover transition duration-[1400ms] group-hover:scale-105" />
+            <img src={img(c.image, 900)} alt={c.name} loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover transition duration-[1400ms] group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
             <div className="absolute inset-x-0 bottom-10 text-center text-white">
               <p className="caps !text-[11px] text-white/85">{c.sub}</p>
@@ -111,9 +111,9 @@ export function Story() {
   return (
     <section className="grid items-center md:grid-cols-2">
       <div className="aspect-[4/5] overflow-hidden md:aspect-auto md:h-[86svh] md:max-h-[860px]">
-        <img src={img('1603400521630-9f2de124b33b', 1200)} alt="Rails of Zylora garments in soft neutral tones" loading="lazy" className="size-full object-cover" />
+        <img src={img('1603400521630-9f2de124b33b', 1200)} alt="Rails of Zylora garments in soft neutral tones" loading="lazy" decoding="async" className="size-full object-cover" />
       </div>
-      <div className="px-6 py-16 text-center md:px-16 lg:px-24">
+      <div className="px-6 py-10 text-center md:px-16 lg:px-24">
         <p className="caps !text-[11px] text-muted">The Zylora Woman</p>
         <h2 className="mt-4 font-serif text-[36px] leading-[1.1] md:text-[52px]">
           Made for every
@@ -146,13 +146,13 @@ export function Story() {
 
 export function Services() {
   return (
-    <section id="services" className="scroll-mt-20 px-4 py-16 md:px-10 md:py-24">
+    <section id="services" className="scroll-mt-20 px-4 py-8 md:px-10 md:py-14">
       <SectionTitle title="Zylora Services" />
       <div className="mx-auto grid max-w-[1400px] gap-10 md:grid-cols-3 md:gap-3">
         {services.map((s) => (
           <div key={s.title} className="text-center">
             <div className="aspect-[4/3] overflow-hidden bg-cream">
-              <img src={img(s.image, 900, 675)} alt="" loading="lazy" className="size-full object-cover" />
+              <img src={img(s.image, 900, 675)} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
             </div>
             <h3 className="mt-6 font-serif text-[26px] leading-tight">{s.title}</h3>
             <p className="mx-auto mt-2 max-w-xs text-[14px] leading-relaxed text-muted">{s.text}</p>

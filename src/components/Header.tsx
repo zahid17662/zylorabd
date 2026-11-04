@@ -100,7 +100,7 @@ function SearchPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
             {results.slice(0, 8).map((p) => (
               <a key={p.id} href="#new-arrivals" onClick={onClose} className="group">
                 <div className="aspect-[4/5] overflow-hidden bg-cream">
-                  <img src={img(p.image, 400, 500)} alt="" className="size-full object-cover transition duration-700 group-hover:scale-105" />
+                  <img src={img(p.image, 400, 500)} alt="" loading="lazy" decoding="async" className="size-full object-cover transition duration-700 group-hover:scale-105" />
                 </div>
                 <p className="mt-3 text-[14px] leading-snug">{p.title}</p>
                 <p className="text-[13px] text-muted">{taka(p.salePrice ?? p.price)}</p>

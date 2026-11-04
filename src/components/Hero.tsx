@@ -51,7 +51,7 @@ export function Hero() {
   const s = SLIDES[i]
 
   return (
-    <section id="top" className="relative h-[88svh] min-h-[520px] overflow-hidden bg-ink md:h-[100svh] md:max-h-[980px]" aria-label="Campaign">
+    <section id="top" className="relative h-[58svh] min-h-[380px] max-h-[460px] overflow-hidden bg-ink md:h-[70svh] md:min-h-[480px] md:max-h-[640px]" aria-label="Campaign">
       {SLIDES.map((sl, k) => {
         const pos = k === i ? 'translate-x-0' : k === prev ? 'translate-x-full' : '-translate-x-full'
         return (
@@ -60,18 +60,18 @@ export function Hero() {
             aria-hidden={k !== i}
             className={`absolute inset-0 ${pos} ${k === i || k === prev ? 'transition-transform duration-[900ms] ease-[cubic-bezier(.6,0,.2,1)]' : ''}`}
           >
-            <img src={img(sl.image, 2000)} alt="" style={{ objectPosition: sl.position }} className="absolute inset-0 size-full object-cover" />
+            <img src={img(sl.image, 2000)} alt="" decoding="async" style={{ objectPosition: sl.position }} className="absolute inset-0 size-full object-cover" />
           </div>
         )
       })}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/55" />
 
-      <div key={i} className="absolute inset-x-0 bottom-16 flex flex-col items-center px-6 text-center text-white md:bottom-20">
+      <div key={i} className="absolute inset-x-0 bottom-14 flex flex-col items-center px-6 text-center text-white md:bottom-20">
         <p className="caps animate-[rise_.8s_both] !text-[11px] text-white/85">{s.kicker}</p>
-        <h1 className="mt-3 animate-[rise_.8s_.08s_both] font-serif text-[40px] leading-[1.05] font-normal md:text-[64px]">{s.title}</h1>
+        <h1 className="mt-3 animate-[rise_.8s_.08s_both] font-serif text-[32px] leading-[1.05] font-normal md:text-[56px]">{s.title}</h1>
         <a
           href={s.href}
-          className="mt-7 animate-[rise_.8s_.16s_both] rounded-full bg-white px-7 py-3.5 text-[14px] text-ink transition-colors hover:bg-ink hover:text-white"
+          className="mt-5 animate-[rise_.8s_.16s_both] rounded-full bg-white px-7 py-3 text-[14px] text-ink transition-colors hover:bg-ink hover:text-white"
         >
           {s.cta}
         </a>
