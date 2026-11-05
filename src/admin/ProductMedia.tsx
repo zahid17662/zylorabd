@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { X } from 'lucide-react'
+import { useRef, useState, type DragEvent } from 'react'
+import { ImagePlus, Upload, Video, X } from 'lucide-react'
 import { ProductImage } from '../components/ui/ProductImage'
 import { inp, label } from './ui'
 import { uploadErrorMessage, uploadMedia } from './upload'
@@ -26,29 +26,74 @@ function videoSeconds(file: File): Promise<number | null> {
 function useUpload(kind: 'image' | 'video', onUrl: (url: string) => void) {
   const [progress, setProgress] = useState<number | null>(null)
   const [err, setErr] = useState('')
-  const run = async (file: File) => {
+  /** Resolves true when the file was uploaded and handed to onUrl. */
+  const run = async (file: File): Promise<boolean> => {
     setErr('')
     if (!file.type.startsWith(`${kind}/`)) {
       setErr(`Please choose a${kind === 'image' ? 'n image' : ' video'} file.`)
-      return
+      return false
     }
     if (kind === 'video') {
       const secs = await videoSeconds(file)
       if (secs !== null && secs > MAX_VIDEO_SECONDS) {
         setErr(`This video is ${Math.round(secs)} seconds long. Please upload a short clip of about 5 seconds (max ${MAX_VIDEO_SECONDS}).`)
-        return
+        return false
       }
     }
     setProgress(0)
     try {
       onUrl((await uploadMedia(file, setProgress)).url)
+      return true
     } catch (e) {
       setErr(uploadErrorMessage(e))
+      return false
     } finally {
       setProgress(null)
     }
   }
   return { progress, err, run }
+}
+
+const pillBtn = 'shrink-0 whitespace-nowrap rounded-full border border-ink px-4 text-[13px] hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50'
+
+interface UploadButtonProps {
+  text: string
+  accept: string
+  icon: typeof Upload
+  busy: boolean
+  onFile: (file: File) => void
+}
+
+/** Styled device-upload button: hidden file input, keyboard-focusable, and a drag-and-drop target. */
+function UploadButton({ text, accept, icon: Icon, busy, onFile }: UploadButtonProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [dragging, setDragging] = useState(false)
+  const onDrop = (e: DragEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    setDragging(false)
+    const f = e.dataTransfer.files[0]
+    if (f && !busy) onFile(f)
+  }
+  return (
+    <>
+      <input
+        ref={inputRef} type="file" accept={accept} className="hidden" tabIndex={-1} aria-hidden="true"
+        onChange={(e) => {
+          const f = e.target.files?.[0]
+          e.target.value = '' // allow re-picking the same file
+          if (f) onFile(f)
+        }}
+      />
+      <button
+        type="button" disabled={busy} onClick={() => inputRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true) }} onDragLeave={() => setDragging(false)} onDrop={onDrop}
+        className={`${pillBtn} inline-flex items-center gap-2 py-2.5 font-medium ${dragging ? 'bg-slate-100' : ''}`}
+      >
+        <Icon className="size-4" aria-hidden="true" />
+        {text}
+      </button>
+    </>
+  )
 }
 
 function Progress({ pct }: { pct: number }) {
@@ -88,13 +133,13 @@ export function ImageField({ images, onAdd, onRemove }: { images: string[]; onAd
           ))}
         </ul>
       )}
-      <input
-        type="file" accept="image/jpeg,image/png,image/webp" disabled={progress !== null} className="text-[13px]" aria-label="Upload photo"
-        onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void run(f) }}
-      />
+      <UploadButton text="Upload from device" accept="image/jpeg,image/png,image/webp" icon={ImagePlus} busy={progress !== null} onFile={(f) => void run(f)} />
       <div className="mt-2 flex gap-2">
-        <input className={inp} aria-label="Image URL" placeholder="…or paste an image URL" value={url} onChange={(e) => setUrl(e.target.value)} />
-        <button type="button" className="rounded-full border border-ink px-4 text-[13px]" onClick={addUrl}>Add</button>
+        <input
+          className={inp} aria-label="Image URL" placeholder="…or paste an image URL" value={url}
+          onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addUrl() } }}
+        />
+        <button type="button" className={pillBtn} disabled={!url.trim()} onClick={addUrl}>Add URL</button>
       </div>
       {progress !== null && <Progress pct={progress} />}
       {err && <p role="alert" className="mt-1 text-[12px] text-wine">{err}</p>}
@@ -103,7 +148,13 @@ export function ImageField({ images, onAdd, onRemove }: { images: string[]; onAd
 }
 
 export function VideoField({ url, onChange }: { url: string; onChange: (next: string) => void }) {
+  const [draft, setDraft] = useState('')
   const { progress, err, run } = useUpload('video', onChange)
+  const addUrl = () => {
+    const v = draft.trim()
+    if (v) onChange(v)
+    setDraft('')
+  }
   return (
     <div>
       <label className={label}>Showcase video · a real ~5 second clip of the product (MP4 / WebM, max 15 MB). Customers see it as the last slide.</label>
@@ -112,13 +163,16 @@ export function VideoField({ url, onChange }: { url: string; onChange: (next: st
           <video key={url} src={url} controls playsInline preload="metadata" className="size-full object-cover" />
         </div>
       )}
-      <input
-        type="file" accept="video/mp4,video/webm" disabled={progress !== null} className="text-[13px]" aria-label="Upload video"
-        onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void run(f) }}
-      />
+      <div className="flex flex-wrap gap-2">
+        <UploadButton text="Upload video from device" accept="video/mp4,video/webm" icon={Video} busy={progress !== null} onFile={(f) => void run(f)} />
+        {url && <button type="button" className={pillBtn} onClick={() => onChange('')}>Remove video</button>}
+      </div>
       <div className="mt-2 flex gap-2">
-        <input className={inp} aria-label="Video URL" placeholder="…or paste a video URL" value={url} onChange={(e) => onChange(e.target.value)} />
-        {url && <button type="button" className="rounded-full border border-ink px-4 text-[13px]" onClick={() => onChange('')}>Remove</button>}
+        <input
+          className={inp} aria-label="Video URL" placeholder="…or paste a video URL" value={draft}
+          onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addUrl() } }}
+        />
+        <button type="button" className={pillBtn} disabled={!draft.trim()} onClick={addUrl}>Add URL</button>
       </div>
       {progress !== null && <Progress pct={progress} />}
       {err && <p role="alert" className="mt-1 text-[12px] text-wine">{err}</p>}
