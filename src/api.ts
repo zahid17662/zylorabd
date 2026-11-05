@@ -1,7 +1,8 @@
 import { SIZES, type Product, type Size } from './data'
 
-export const API = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000'
-const BASE = `${API}/api/v1`
+// Production defaults to same-origin relative paths (Netlify proxies /api/* to the backend); dev hits localhost.
+export const API = (import.meta.env.VITE_API_URL as string | undefined) ?? (import.meta.env.PROD ? '' : 'http://localhost:8000')
+const BASE = API ? `${API}/api/v1` : '/api/v1'
 
 type Tokens = { access_token: string; refresh_token: string }
 const KEY = 'zylora.tokens'

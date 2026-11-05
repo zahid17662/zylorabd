@@ -31,6 +31,9 @@ export function CheckoutModal() {
     e.preventDefault()
     if (!user) return openLogin()
     if (!isBdPhone(f.phone)) return setErr('Enter a valid Bangladeshi mobile number, e.g. 01712345678')
+    if (lines.some((l) => !l.product.variantIds[l.size])) {
+      return setErr('Live stock is still syncing. Please wait a moment and try again.')
+    }
     setBusy(true)
     setErr('')
     try {

@@ -29,6 +29,48 @@ export const img = (id: string, w = 600, h?: number) => {
   return `${base}?auto=format&fit=crop&w=${w}${h ? `&h=${h}` : ''}&q=80`
 }
 
+/* ---------- offline catalog (mirrors backend/seed.py) ---------- */
+const UNSPLASH = 'https://images.unsplash.com/photo-'
+const SOLD_OUT: Product['stock'] = { S: 0, M: 0, L: 0, XL: 0, XXL: 0 }
+
+const fallback = (
+  n: number,
+  title: string,
+  category: string,
+  price: number,
+  discount: number,
+  photo: string,
+  stock: Product['stock'],
+): Product => ({
+  id: `fallback-${n}`,
+  title,
+  category,
+  price,
+  salePrice: discount > 0 ? Math.round(price * (1 - discount / 100)) : undefined,
+  image: UNSPLASH + photo,
+  images: [UNSPLASH + photo],
+  stock,
+  // No backend variant ids offline: checkout waits for the live catalog.
+  variantIds: {},
+  description: '',
+})
+
+/** Shown instantly and whenever the API is unreachable (cold start, offline, dev without backend). */
+export const FALLBACK_PRODUCTS: Product[] = [
+  fallback(1, 'Noor Embroidered Tiered Kurti', 'Kurti', 1850, 0, '1760287363878-1a09af715b80', { S: 3, M: 6, L: 5, XL: 2, XXL: 1 }),
+  fallback(2, 'Noir Sleeveless Shell Top', 'Western', 1350, 0, '1519554318711-aaf73ece6ff9', SOLD_OUT),
+  fallback(3, 'Mocha Relaxed Fit Shirt', 'Western', 1450, 0, '1776838103951-993ff1ffc916', { S: 4, M: 7, L: 6, XL: 3, XXL: 0 }),
+  fallback(4, 'Blossom Floral Sundress | Limited Edition', 'Western', 2250, 25, '1585129357576-aa4da9a68970', { S: 2, M: 4, L: 3, XL: 1, XXL: 0 }),
+  fallback(5, 'Paisley Night Long Kurti', 'Kurti', 2150, 20, '1760287364219-160c234ded00', { S: 2, M: 0, L: 3, XL: 1, XXL: 0 }),
+  fallback(6, 'Rose Lattice Two-Piece Set', 'Three Piece', 2890, 0, '1764271692129-767f58952c26', { S: 2, M: 3, L: 2, XL: 2, XXL: 1 }),
+  fallback(7, 'Rose Garden Embellished Gown', 'Gowns', 3450, 40, '1735553816887-95a2657d5fd8', { S: 1, M: 2, L: 2, XL: 1, XXL: 0 }),
+  fallback(8, 'Mehrun Embroidered Red Kurti', 'Kurti', 3250, 0, '1760287364328-e30221615f2e', { S: 1, M: 3, L: 4, XL: 2, XXL: 1 }),
+  fallback(9, 'Ivory Lace Sleeveless Dress', 'Western', 1690, 30, '1591221662157-6f62de5508eb', { S: 9, M: 12, L: 10, XL: 6, XXL: 3 }),
+  fallback(10, 'Heritage Tweed Shift Dress', 'Western', 1650, 0, '1772909566980-b06731149511', { S: 3, M: 4, L: 2, XL: 1, XXL: 0 }),
+  fallback(11, 'Tan Leather Shoulder Bag', 'Accessories', 2450, 20, '1691480150204-66dd1eb77391', { 'Free Size': 8 }),
+  fallback(12, 'Gold Drop Jhumka Earrings', 'Accessories', 890, 0, '1705326453282-e4e1b78f5fea', { 'Free Size': 18 }),
+]
+
 /** "৳ 1,950.00" — WooCommerce style price */
 export const taka = (n: number) =>
   `৳\u00a0${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

@@ -12,7 +12,7 @@ import { Reviews } from './components/Reviews'
 import { Collections, Creations, EditorialSplit, ProductSection, Services, Story } from './components/Sections'
 
 function Shop() {
-  const { products, loading, error, reload } = useCatalog()
+  const { products, syncing } = useCatalog()
   // The API returns newest first: the first four are "New Arrivals", the rest the Eid collection.
   const newArrivals = products.slice(0, 4)
   const eid = products.slice(4)
@@ -23,25 +23,20 @@ function Shop() {
       <main>
         <Hero />
         <Creations />
-        {error ? (
-          <p className="px-4 py-24 text-center text-[15px]">
-            We could not load the products. <button onClick={reload} className="underline">Try again</button>
-          </p>
-        ) : loading && products.length === 0 ? (
-          <p className="px-4 py-24 text-center text-[15px] text-muted">Loading products…</p>
-        ) : (
-          <>
-            <ProductSection id="new-arrivals" sub="Just in" title="New Arrivals" products={newArrivals} />
-            <EditorialSplit />
-            <ProductSection id="eid-collection" sub="Limited pieces" title="The Eid Collection" products={eid} />
-          </>
-        )}
+        <ProductSection id="new-arrivals" sub="Just in" title="New Arrivals" products={newArrivals} />
+        <EditorialSplit />
+        <ProductSection id="eid-collection" sub="Limited pieces" title="The Eid Collection" products={eid} />
         <Collections />
         <Story />
         <Services />
         <Reviews />
       </main>
       <Footer />
+      {syncing && (
+        <div role="status" aria-live="polite" className="fixed bottom-4 left-4 z-40 bg-black/80 px-3 py-1.5 text-[12px] text-white">
+          Syncing latest stock…
+        </div>
+      )}
       <CartDrawer />
       <ProductModal />
       <CheckoutModal />
