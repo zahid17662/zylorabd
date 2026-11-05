@@ -1,0 +1,10 @@
+{
+  "description": "Shop clothing with product photos and videos, choose sizes, and order with online payment or cash on delivery. Store admins manage inventory and track orders.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
