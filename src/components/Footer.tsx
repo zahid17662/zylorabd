@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronDown } from 'lucide-react'
 import { Logo } from './Logo'
 
 const COLUMNS = {
@@ -23,9 +23,30 @@ export function Footer() {
 
   return (
     <footer className="border-t border-line bg-white">
-      <div className="mx-auto grid max-w-[1400px] gap-12 px-6 py-16 md:px-10 lg:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.6fr)]">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 px-6 py-8 md:grid-cols-2 md:px-10 md:py-16 lg:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.6fr)] lg:gap-12">
+        {/* Mobile: collapsed accordions keep the footer short */}
+        <div className="divide-y divide-line border-y border-line md:hidden">
+          {Object.entries(COLUMNS).map(([title, links]) => (
+            <details key={title} className="group">
+              <summary className="caps flex cursor-pointer list-none items-center justify-between py-3.5 !text-[11px] [&::-webkit-details-marker]:hidden">
+                {title}
+                <ChevronDown className="size-4 transition-transform group-open:rotate-180" strokeWidth={1.25} />
+              </summary>
+              <ul className="space-y-2.5 pb-4">
+                {links.map((l) => (
+                  <li key={l}>
+                    <a href={l.startsWith('+') ? 'tel:+8801700000000' : '#top'} className="text-[13px] text-muted hover:text-ink">
+                      {l}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        </div>
+
         {Object.entries(COLUMNS).map(([title, links]) => (
-          <div key={title}>
+          <div key={title} className="hidden md:block">
             <h3 className="caps !text-[11px]">{title}</h3>
             <ul className="mt-5 space-y-3">
               {links.map((l) => (
@@ -39,9 +60,9 @@ export function Footer() {
           </div>
         ))}
 
-        <div>
+        <div className="md:col-span-2 lg:col-span-1">
           <h3 className="caps !text-[11px]">Email Sign-Up</h3>
-          <p className="mt-5 text-[14px] text-muted">
+          <p className="mt-3 text-[13px] text-muted md:mt-5 md:text-[14px]">
             Be the first to know about new collections, Eid launches and private sales.
           </p>
           {done ? (
@@ -68,7 +89,7 @@ export function Footer() {
               </button>
             </form>
           )}
-          <h3 className="caps mt-10 !text-[11px]">Visit Our Boutique</h3>
+          <h3 className="caps mt-6 !text-[11px] md:mt-10">Visit Our Boutique</h3>
           <iframe
             title="Zylora boutique location"
             src="https://www.google.com/maps?q=Gulshan%201%2C%20Dhaka&z=14&output=embed"
@@ -76,14 +97,24 @@ export function Footer() {
             height="170"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            className="mt-4 block border-0 grayscale"
+            className="mt-4 hidden border-0 grayscale md:block"
           />
-          <p className="mt-2 text-[13px] text-muted">Gulshan 1, Dhaka · Open daily 11am – 9pm</p>
+          <p className="mt-2 text-[13px] text-muted">
+            <a
+              href="https://www.google.com/maps?q=Gulshan%201%2C%20Dhaka"
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-2 md:no-underline"
+            >
+              Gulshan 1, Dhaka
+            </a>{' '}
+            · Open daily 11am – 9pm
+          </p>
         </div>
       </div>
 
       <div className="border-t border-line">
-        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-4 px-6 py-6 text-[13px] text-muted md:px-10">
+        <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-6 py-4 text-[12px] text-muted md:px-10 md:py-6 md:text-[13px]">
           <span>Ship to: Bangladesh (৳ BDT)</span>
           <div className="flex gap-6">
             {SOCIAL.map((s) => (
@@ -98,9 +129,9 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="overflow-hidden px-6 pt-4 pb-10 text-center">
-        <Logo className="block text-[13vw] leading-none md:text-[11vw]" />
-        <p className="mt-6 text-[12px] text-muted">Copyright © {new Date().getFullYear()} Zylora. All rights reserved.</p>
+      <div className="overflow-hidden px-6 pt-2 pb-6 text-center md:pt-4 md:pb-10">
+        <Logo className="block text-[10vw] leading-none md:text-[11vw]" />
+        <p className="mt-4 md:mt-6text-[12px] text-muted">Copyright © {new Date().getFullYear()} Zylora. All rights reserved.</p>
       </div>
     </footer>
   )
