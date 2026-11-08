@@ -4,7 +4,7 @@ A mobile-first apparel store. Customers browse, pick a size, sign in (email, pho
 
 | Part | Tech | Where it runs |
 |---|---|---|
-| Storefront + admin (`src/`) | React, Vite, Tailwind | Vercel or Cloudflare Pages (static) |
+| Storefront + admin (`frontend/`) | React, Vite, Tailwind | Vercel or Cloudflare Pages (static) |
 | API (`backend/`) | FastAPI, async SQLAlchemy | Render, Railway, or any VPS (Docker) |
 | Database | Neon PostgreSQL | Neon (hosted) |
 | Photos and videos | Cloudflare R2 (S3-compatible) | Cloudflare, served through a CDN domain |
@@ -29,7 +29,7 @@ All backend settings live in `backend/.env`. Copy `backend/.env.example` to `bac
 | `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET` | Facebook Login (optional). |
 | `SMS_API_URL`, `SMS_API_KEY`, `SMS_SENDER_ID` | SMS provider for OTP codes and order texts. Without it, SMS are only written to the server log. |
 
-Frontend (set in Vercel/Cloudflare Pages, or in a `.env.production` next to `package.json`):
+Frontend (set in Vercel/Cloudflare Pages, or in a `frontend/.env.production`):
 
 | Variable | Meaning |
 |---|---|
@@ -54,7 +54,7 @@ The Docker image runs `alembic upgrade head` automatically on every start. After
 
 ```bash
 cd backend && uvicorn app.main:app --reload     # API on http://localhost:8000  (docs: /docs)
-npm install && npm run dev                      # storefront on the Vite port
+cd frontend && npm install && npm run dev      # storefront on the Vite port
 ```
 
 Run the tests: `cd backend && pip install -r requirements-dev.txt && pytest`. They create a temporary schema in the Neon database and delete it afterwards, so real data is never touched.
@@ -101,8 +101,8 @@ docker compose up --build -d
 Put Nginx or Caddy in front for HTTPS and proxy to port 8000. Check with `curl https://<api>/health`.
 
 ### Storefront on Vercel or Cloudflare Pages
-- Build command `npm run build`, output directory `dist`, environment `VITE_API_URL` (and `VITE_FACEBOOK_APP_ID` if used).
-- `vercel.json` and `public/_redirects` already send every path to the app so `/admin` and `/checkout/result` work on refresh.
+- Set **Root Directory** to `frontend`. Build command `npm run build`, output directory `dist`, environment `VITE_API_URL` (and `VITE_FACEBOOK_APP_ID` if used).
+- `frontend/vercel.json` and `frontend/public/_redirects` already send every path to the app so `/admin` and `/checkout/result` work on refresh.
 - Add the final storefront address to the API's `CORS_ORIGINS`.
 
 ## 7. Before going live: checklist
