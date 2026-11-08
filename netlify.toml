@@ -1,4 +1,6 @@
 [build]
+  # The storefront lives in frontend/; publish is relative to this base.
+  base = "frontend"
   command = "npm run build"
   publish = "dist"
 

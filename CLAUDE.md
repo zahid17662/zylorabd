@@ -6,7 +6,7 @@
 - **Backend** (`backend/`): Python 3.11+, FastAPI, SQLAlchemy 2.0 (async), `asyncpg`, Pydantic v2, Alembic
 - **Database:** Neon serverless PostgreSQL (`ap-southeast-1`, PgBouncer pooler)
 - **Media storage:** Cloudflare R2 / S3 via `boto3` presigned PUT URLs. Never stream video uploads through FastAPI.
-- **Frontend** (repo root `src/`): React 19, Vite, Tailwind 4, Lucide icons, `fetch` via `src/api.ts` (no Axios)
+- **Frontend** (`frontend/`, source in `frontend/src/`): React 19, Vite, Tailwind 4, Lucide icons, `fetch` via `frontend/src/api.ts` (no Axios)
 - **Auth:** JWT access token + rotating refresh token. Email/password, phone OTP (BD SMS gateway hook), Facebook login.
 - **Payments:** Cash on Delivery + online gateway (UddoktaPay; bKash/Nagad/cards) with server-to-server webhook verification
 
