@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Heart, LayoutDashboard, LogOut, Menu, Phone, Search, ShoppingBag, User, X } from 'lucide-react'
+import { ChevronRight, CircleUser, Heart, LayoutDashboard, LogOut, Menu, Phone, Search, ShoppingBag, User, UserPlus, X } from 'lucide-react'
 import { useCart } from '../cart'
 import { img, taka } from '../data'
 import { useAuth } from '../auth'
@@ -21,49 +21,92 @@ const SECONDARY = ['Zylora Services', 'Track Your Order', 'Size Guide', 'Contact
 function MenuDrawer({ open, onClose, onWishlist }: { open: boolean; onClose: () => void; onWishlist: () => void }) {
   const { user, openLogin, logout } = useAuth()
   const { wishlist } = useCart()
+  const row = 'flex w-full items-center justify-between border-b border-line px-5 py-4 text-left'
+  const act = (fn: () => void) => () => {
+    onClose()
+    fn()
+  }
   return (
     <div className={`fixed inset-0 z-[60] ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
       <div className={`absolute inset-0 bg-black/40 transition-opacity duration-500 ${open ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} />
       <aside
-        className={`absolute inset-y-0 left-0 flex w-full max-w-[440px] flex-col bg-white px-8 py-7 transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] md:px-12 ${
+        className={`absolute inset-y-0 left-0 flex w-[88%] max-w-[440px] flex-col overflow-y-auto bg-white transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] md:w-full md:px-12 md:py-7 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <button onClick={onClose} className="caps flex items-center gap-2 self-start" aria-label="Close menu">
-          <X className="size-4" strokeWidth={1.5} /> Close
-        </button>
-        <nav className="mt-12 flex flex-col gap-1">
-          {MENU.map((m, i) => (
-            <a
-              key={m.label}
-              href={m.href}
-              onClick={onClose}
-              style={{ animationDelay: `${i * 45}ms` }}
-              className={`py-2 font-serif text-[28px] leading-tight transition-colors hover:text-caramel ${open ? 'animate-[rise_.6s_both]' : ''} ${
-                m.label === 'Flash Sale' ? 'text-wine' : ''
-              }`}
-            >
-              {m.label}
-            </a>
-          ))}
-        </nav>
-        <div className="mt-auto space-y-3 border-t border-line pt-6">
-          {user ? (
-            <p className="text-[14px]">Signed in as <span className="font-medium">{user.name}</span> · <button onClick={() => { onClose(); void logout() }} className="underline underline-offset-4">Sign out</button></p>
-          ) : (
-            <button onClick={() => { onClose(); openLogin() }} className="w-full rounded-full bg-ink py-3 text-[14px] text-white">Sign in / Create account</button>
-          )}
-          <button onClick={() => { onClose(); onWishlist() }} className="flex items-center gap-2 text-[14px] text-muted hover:text-ink">
-            <Heart className="size-4" strokeWidth={1.4} /> Wishlist ({wishlist.length})
+        {/* Mobile menu */}
+        <div className="flex flex-1 flex-col md:hidden">
+          <div className="flex items-center justify-between border-b border-line px-5 py-4">
+            <h2 className="text-[18px] font-semibold">Menu</h2>
+            <button onClick={onClose} aria-label="Close menu" className="grid size-9 place-items-center"><X className="size-6" strokeWidth={1.5} /></button>
+          </div>
+          <nav aria-label="Shop">
+            {MENU.map((m) => (
+              <a key={m.label} href={m.href} onClick={onClose} className={`${row} text-[14px] tracking-[0.08em] uppercase ${m.label === 'Flash Sale' ? 'text-wine' : ''}`}>
+                {m.label}
+                <ChevronRight className="size-5 text-muted" strokeWidth={1.5} />
+              </a>
+            ))}
+          </nav>
+          <div className="mt-2 border-t-4 border-cream">
+            {user ? (
+              <>
+                <p className={`${row} justify-start gap-3 text-[14px]`}><CircleUser className="size-6" strokeWidth={1.3} /><span className="truncate">Hi, {user.name}</span></p>
+                {user.role === 'admin' && (
+                  <a href="/admin" className={`${row} justify-start gap-3 text-[14px]`}><LayoutDashboard className="size-6" strokeWidth={1.3} />Admin dashboard</a>
+                )}
+              </>
+            ) : (
+              <>
+                <button onClick={act(openLogin)} className={`${row} justify-start gap-3 text-[14px]`}><CircleUser className="size-6" strokeWidth={1.3} />Sign In</button>
+                <button onClick={act(openLogin)} className={`${row} justify-start gap-3 text-[14px]`}><UserPlus className="size-6" strokeWidth={1.3} />Create an Account</button>
+              </>
+            )}
+            <button onClick={act(onWishlist)} className={`${row} justify-start gap-3 text-[14px]`}>
+              <Heart className="size-6" strokeWidth={1.3} />My Wish List{wishlist.length > 0 && <span className="text-muted">({wishlist.length})</span>}
+            </button>
+            {user && (
+              <button onClick={act(() => void logout())} className={`${row} justify-start gap-3 text-[14px]`}><LogOut className="size-6" strokeWidth={1.3} />Sign out</button>
+            )}
+          </div>
+          <div className="mt-auto space-y-3 px-5 py-6">
+            {SECONDARY.map((t) => (
+              <a key={t} href="#services" onClick={onClose} className="block text-[13px] text-muted">{t}</a>
+            ))}
+            <p className="pt-2 text-[13px] text-muted">
+              Can we help you? <a href="tel:+8801700000000" className="text-ink underline underline-offset-4">+880 1700-000000</a>
+            </p>
+          </div>
+        </div>
+
+        {/* Desktop menu */}
+        <div className="hidden flex-1 flex-col md:flex">
+          <button onClick={onClose} className="caps flex items-center gap-2 self-start" aria-label="Close menu">
+            <X className="size-4" strokeWidth={1.5} /> Close
           </button>
-          {SECONDARY.map((s) => (
-            <a key={s} href="#services" onClick={onClose} className="block text-[14px] text-muted hover:text-ink">
-              {s}
-            </a>
-          ))}
-          <p className="pt-3 text-[13px] text-muted">
-            Can we help you? <a href="tel:+8801700000000" className="text-ink underline underline-offset-4">+880 1700-000000</a>
-          </p>
+          <nav className="mt-12 flex flex-col gap-1">
+            {MENU.map((m, i) => (
+              <a
+                key={m.label}
+                href={m.href}
+                onClick={onClose}
+                style={{ animationDelay: `${i * 45}ms` }}
+                className={`py-2 font-serif text-[28px] leading-tight transition-colors hover:text-caramel ${open ? 'animate-[rise_.6s_both]' : ''} ${
+                  m.label === 'Flash Sale' ? 'text-wine' : ''
+                }`}
+              >
+                {m.label}
+              </a>
+            ))}
+          </nav>
+          <div className="mt-auto space-y-3 border-t border-line pt-6">
+            {SECONDARY.map((t) => (
+              <a key={t} href="#services" onClick={onClose} className="block text-[14px] text-muted hover:text-ink">{t}</a>
+            ))}
+            <p className="pt-3 text-[13px] text-muted">
+              Can we help you? <a href="tel:+8801700000000" className="text-ink underline underline-offset-4">+880 1700-000000</a>
+            </p>
+          </div>
         </div>
       </aside>
     </div>
