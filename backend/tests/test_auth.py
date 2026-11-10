@@ -115,3 +115,21 @@ async def test_admin_routes_are_protected_by_role(client, make_user):
     r = await client.get("/api/v1/admin/dashboard", headers=auth_headers(admin))
     assert r.status_code == 200
     assert {"total_orders", "pending_orders", "total_revenue", "cod_orders", "online_orders"} <= set(r.json())
+
+
+async def test_change_password(client):
+    email = "chg@example.com"
+    tokens = (await register(client, email)).json()
+    h = {"Authorization": f"Bearer {tokens['access_token']}"}
+    url = "/api/v1/auth/change-password"
+    assert (await client.post(url, json={"current_password": "nope-nope", "new_password": "NewPassw0rd!"}, headers=h)).status_code == 400
+    assert (await client.post(url, json={"current_password": PASSWORD, "new_password": PASSWORD}, headers=h)).status_code == 400
+    assert (await client.post(url, json={"current_password": PASSWORD, "new_password": "short"}, headers=h)).status_code == 422
+    assert (await client.post(url, json={"current_password": PASSWORD, "new_password": "NewPassw0rd!"})).status_code == 401
+    ok = await client.post(url, json={"current_password": PASSWORD, "new_password": "NewPassw0rd!"}, headers=h)
+    assert ok.status_code == 200 and ok.json()["refresh_token"] != tokens["refresh_token"]
+    # old refresh token is dead, old password rejected, new password works, returned session works
+    assert (await client.post("/api/v1/auth/refresh", json={"refresh_token": tokens["refresh_token"]})).status_code == 401
+    assert (await client.post("/api/v1/auth/login", json={"method": "email", "email": email, "password": PASSWORD})).status_code == 401
+    assert (await client.post("/api/v1/auth/login", json={"method": "email", "email": email, "password": "NewPassw0rd!"})).status_code == 200
+    assert (await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {ok.json()['access_token']}"})).status_code == 200

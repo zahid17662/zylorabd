@@ -12,7 +12,7 @@ from app.core.database import get_db
 from app.core.ratelimit import rate_limit
 from app.api.deps import Principal, get_principal
 from app.models import AuthProvider, OtpCode, RefreshToken, Role, User
-from app.schemas import LoginIn, OtpRequestIn, RefreshIn, RegisterIn, TokenOut, UserOut, normalize_phone
+from app.schemas import ChangePasswordIn, LoginIn, OtpRequestIn, RefreshIn, RegisterIn, TokenOut, UserOut, normalize_phone
 from app.core.security import (
     create_access_token, generate_otp, hash_password, new_refresh_token, now, sha256, verify_password,
 )
@@ -187,3 +187,17 @@ async def logout(body: RefreshIn, db: AsyncSession = Depends(get_db)):
 @router.get("/me", response_model=UserOut)
 async def me(principal: Principal = Depends(get_principal)):
     return principal.user
+
+
+@router.post("/change-password", response_model=TokenOut, dependencies=[Depends(rate_limit("change-password", 10, 60))])
+async def change_password(body: ChangePasswordIn, principal: Principal = Depends(get_principal), db: AsyncSession = Depends(get_db)):
+    """Change the signed-in user's own password. Every other session is signed out; this one gets fresh tokens."""
+    user = principal.user
+    # 400 (not 401): the session itself is fine, only the typed password is wrong, so clients must not try to refresh.
+    if not verify_password(body.current_password, user.password_hash):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is incorrect")
+    if body.new_password == body.current_password:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "New password must be different from the current one")
+    user.password_hash = hash_password(body.new_password)
+    await db.execute(update(RefreshToken).where(RefreshToken.user_id == user.id, RefreshToken.revoked_at.is_(None)).values(revoked_at=now()))
+    return await issue_tokens(db, user, AuthProvider(principal.login_method))

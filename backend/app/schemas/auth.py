@@ -34,6 +34,11 @@ class LoginIn(BaseModel):
     facebook_access_token: str | None = None
 
 
+class ChangePasswordIn(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
+
+
 class RefreshIn(BaseModel):
     refresh_token: str
 

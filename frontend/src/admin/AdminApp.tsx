@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from 'react'
-import { ExternalLink, LayoutDashboard, LogOut, Package, ReceiptText } from 'lucide-react'
+import { ExternalLink, KeyRound, LayoutDashboard, LogOut, Package, ReceiptText } from 'lucide-react'
 import { AdminProtectedRoute } from './AdminProtectedRoute'
 import Orders from './Orders'
 import Overview from './Overview'
 import Products from './Products'
+import { ChangePassword } from './ChangePassword'
 import { btn } from './ui'
 
 type Tab = 'overview' | 'products' | 'orders'
@@ -17,6 +18,7 @@ const iconBtn = 'grid size-10 place-items-center rounded-full text-muted hover:b
 
 export default function AdminApp() {
   const [tab, setTab] = useState<Tab>('overview')
+  const [pwOpen, setPwOpen] = useState(false)
   return (
     <AdminProtectedRoute>
       {(user, signOut) => (
@@ -29,6 +31,7 @@ export default function AdminApp() {
             </div>
             <div className="flex items-center">
               <a href="/" className={iconBtn} aria-label="View store"><ExternalLink className="size-[18px]" /></a>
+              <button className={iconBtn} onClick={() => setPwOpen(true)} aria-label="Change password"><KeyRound className="size-[18px]" /></button>
               <button className={iconBtn} onClick={signOut} aria-label="Sign out"><LogOut className="size-[18px]" /></button>
             </div>
           </header>
@@ -49,7 +52,10 @@ export default function AdminApp() {
             <div className="px-5 pt-8 text-[13px]">
               <a href="/" className="text-muted underline">View store</a>
               <p className="mt-4 truncate text-muted">{user.email}</p>
-              <button className={`${btn} mt-2`} onClick={signOut}>Sign out</button>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button className={btn} onClick={() => setPwOpen(true)}>Change password</button>
+                <button className={btn} onClick={signOut}>Sign out</button>
+              </div>
             </div>
           </aside>
 
@@ -74,6 +80,7 @@ export default function AdminApp() {
               </button>
             ))}
           </nav>
+          {pwOpen && <ChangePassword onClose={() => setPwOpen(false)} />}
         </div>
       )}
     </AdminProtectedRoute>
