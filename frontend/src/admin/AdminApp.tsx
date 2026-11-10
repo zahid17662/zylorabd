@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { ExternalLink, KeyRound, LayoutDashboard, LogOut, Package, ReceiptText } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ExternalLink, KeyRound, LayoutDashboard, LogOut, Menu, Package, ReceiptText, X } from 'lucide-react'
 import { AdminProtectedRoute } from './AdminProtectedRoute'
 import Orders from './Orders'
 import Overview from './Overview'
@@ -14,26 +14,43 @@ const TABS: { id: Tab; label: string; short: string; icon: ReactNode }[] = [
   { id: 'orders', label: 'Orders & Attribution', short: 'Orders', icon: <ReceiptText className="size-5" /> },
 ]
 
+const menuItem = 'flex w-full items-center gap-3 px-4 py-3.5 text-left text-[15px] hover:bg-cream'
 const iconBtn = 'grid size-10 place-items-center rounded-full text-muted hover:bg-cream hover:text-ink'
 
 export default function AdminApp() {
   const [tab, setTab] = useState<Tab>('overview')
   const [pwOpen, setPwOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
   return (
     <AdminProtectedRoute>
       {(user, signOut) => (
         <div className="min-h-svh bg-cream text-ink md:flex">
           {/* Mobile top bar */}
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-white px-4 md:hidden">
+          <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-line bg-white px-4 md:hidden">
             <div className="flex items-baseline gap-2">
               <h1 className="font-serif text-[22px] leading-none">Zylora</h1>
               <span className="rounded bg-ink px-1.5 py-0.5 text-[10px] font-medium tracking-widest text-white uppercase">Admin</span>
             </div>
-            <div className="flex items-center">
-              <a href="/" className={iconBtn} aria-label="View store"><ExternalLink className="size-[18px]" /></a>
-              <button className={iconBtn} onClick={() => setPwOpen(true)} aria-label="Change password"><KeyRound className="size-[18px]" /></button>
-              <button className={iconBtn} onClick={signOut} aria-label="Sign out"><LogOut className="size-[18px]" /></button>
-            </div>
+            <button className={iconBtn} onClick={() => setMenuOpen((v) => !v)} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-haspopup="menu">
+              {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 top-14 z-40 bg-black/30" onClick={() => setMenuOpen(false)} aria-hidden />
+                <div role="menu" className="absolute top-14 right-0 left-0 z-50 border-b border-line bg-white pb-2 shadow-lg">
+                  <p className="truncate px-4 py-3 text-[13px] text-muted">{user.email}</p>
+                  <a role="menuitem" href="/" className={menuItem}><ExternalLink className="size-[18px] text-muted" />View store</a>
+                  <button role="menuitem" className={menuItem} onClick={() => { setMenuOpen(false); setPwOpen(true) }}><KeyRound className="size-[18px] text-muted" />Change password</button>
+                  <button role="menuitem" className={`${menuItem} text-wine`} onClick={signOut}><LogOut className="size-[18px]" />Sign out</button>
+                </div>
+              </>
+            )}
           </header>
 
           {/* Desktop sidebar */}
