@@ -8,7 +8,7 @@ from app.core.config import settings
 # Neon's pooler is PgBouncer in transaction mode: disable asyncpg's prepared statement cache.
 engine = create_async_engine(
     settings.async_database_url,
-    connect_args={"ssl": True, "statement_cache_size": 0},
+    connect_args={"ssl": settings.db_ssl, "statement_cache_size": 0},
     pool_size=10,
     max_overflow=20,
     pool_pre_ping=True,

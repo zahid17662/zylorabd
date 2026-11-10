@@ -71,7 +71,7 @@ async def run_async_migrations() -> None:
     # Same connection settings as the app: Neon needs SSL; its PgBouncer pooler needs no prepared-statement cache.
     connectable = create_async_engine(
         settings.async_database_url,
-        connect_args={"ssl": True, "statement_cache_size": 0},
+        connect_args={"ssl": settings.db_ssl, "statement_cache_size": 0},
         poolclass=pool.NullPool,
     )
 

@@ -9,6 +9,8 @@ class Settings(BaseSettings):
 
     database_url: str
     jwt_secret: str = Field(validation_alias=AliasChoices("jwt_secret", "jwt_secret_key"))
+    # Managed Postgres (Neon, Supabase) needs SSL. Set DB_SSL=false only for a local/CI container without TLS.
+    db_ssl: bool = True
     jwt_algorithm: str = "HS256"
     access_token_minutes: int = Field(default=15, validation_alias=AliasChoices("access_token_minutes", "access_token_expire_minutes"))
     refresh_token_days: int = 30

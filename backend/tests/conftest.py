@@ -23,7 +23,7 @@ from app.main import app
 from app.models import AuthProvider, Product, ProductVariant, Role, User
 
 SCHEMA = f"test_{uuid.uuid4().hex[:10]}"
-CONNECT = {"ssl": True, "statement_cache_size": 0}
+CONNECT = {"ssl": settings.db_ssl, "statement_cache_size": 0}
 
 
 @pytest_asyncio.fixture(scope="session")
