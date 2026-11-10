@@ -8,14 +8,25 @@ import type { LowStock, SplitRow, Stats } from './types'
 const sumOrders = (rows: SplitRow[]): number => rows.reduce((n, r) => n + r.orders, 0)
 const sumRevenue = (rows: SplitRow[]): number => rows.reduce((n, r) => n + Number(r.revenue), 0)
 
-function Kpi({ label, value, tone = '', hero = false, icon }: { label: string; value: string; tone?: string; hero?: boolean; icon: ReactNode }) {
+function Hero({ label, value, note, icon }: { label: string; value: string; note: string; icon: ReactNode }) {
   return (
-    <div className={`rounded-xl p-4 sm:p-5 ${hero ? 'col-span-2 bg-ink text-white xl:col-span-1' : 'border border-line bg-white'}`}>
-      <div className="flex items-center justify-between">
-        <p className={`text-[11px] font-medium tracking-wider uppercase sm:text-[12px] ${hero ? 'text-white/70' : 'text-muted'}`}>{label}</p>
-        <span className={`grid size-7 place-items-center rounded-full ${hero ? 'bg-white/15' : 'bg-cream text-muted'}`}>{icon}</span>
+    <div className="rounded-2xl bg-ink p-5 text-white">
+      <div className="flex items-center gap-2 text-white/70">
+        <span className="grid size-7 place-items-center rounded-full bg-white/15 text-white">{icon}</span>
+        <p className="text-[12px] font-medium tracking-wider uppercase">{label}</p>
       </div>
-      <p className={`mt-2 text-[26px] leading-none font-semibold tabular-nums sm:text-[30px] ${tone}`}>{value}</p>
+      <p className="mt-3 text-[32px] leading-none font-semibold tabular-nums sm:text-[36px]">{value}</p>
+      <p className="mt-2 text-[12px] text-white/60">{note}</p>
+    </div>
+  )
+}
+
+function Stat({ label, value, tone = '', icon }: { label: string; value: string; tone?: string; icon: ReactNode }) {
+  return (
+    <div className="flex flex-col items-center px-2 py-4 text-center sm:items-start sm:px-5 sm:text-left">
+      <span className="mb-2 grid size-8 place-items-center rounded-full bg-cream text-muted">{icon}</span>
+      <p className={`text-[26px] leading-none font-semibold tabular-nums ${tone}`}>{value}</p>
+      <p className="mt-1.5 text-[11px] font-medium tracking-wider text-muted uppercase sm:text-[12px]">{label}</p>
     </div>
   )
 }
@@ -115,11 +126,13 @@ export default function Overview() {
     <div>
       <PageHeader title="Overview" sub="Store performance at a glance" />
       <div className="space-y-4 sm:space-y-5">
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <Kpi hero icon={<Wallet className="size-3.5" />} label="Revenue (paid)" value={taka(Number(s.total_revenue))} />
-        <Kpi icon={<ReceiptText className="size-3.5" />} label="Orders" value={String(s.total_orders)} />
-        <Kpi icon={<Clock className="size-3.5" />} label="To fulfil" value={String(s.pending_fulfillment)} tone={s.pending_fulfillment > 0 ? 'text-amber-700' : ''} />
-        <Kpi icon={<AlertTriangle className="size-3.5" />} label="Low stock" value={String(s.low_stock_variants.length)} tone={s.low_stock_variants.length > 0 ? 'text-wine' : ''} />
+      <div className="space-y-3 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] xl:gap-4 xl:space-y-0">
+        <Hero icon={<Wallet className="size-3.5" />} label="Revenue" value={taka(Number(s.total_revenue))} note="Paid orders only" />
+        <div className="grid grid-cols-3 divide-x divide-line rounded-2xl border border-line bg-white">
+          <Stat icon={<ReceiptText className="size-4" />} label="Orders" value={String(s.total_orders)} />
+          <Stat icon={<Clock className="size-4" />} label="To fulfil" value={String(s.pending_fulfillment)} tone={s.pending_fulfillment > 0 ? 'text-amber-700' : ''} />
+          <Stat icon={<AlertTriangle className="size-4" />} label="Low stock" value={String(s.low_stock_variants.length)} tone={s.low_stock_variants.length > 0 ? 'text-wine' : ''} />
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
