@@ -220,15 +220,6 @@ function WishlistPanel({ open, onClose }: { open: boolean; onClose: () => void }
   )
 }
 
-/** Slim mobile-only strip above the header. */
-function TopStrip() {
-  return (
-    <p className="flex h-7 items-center justify-center bg-black px-4 text-[11px] font-medium tracking-wider text-white uppercase md:hidden">
-      Cash on Delivery · bKash · Nagad · Cards
-    </p>
-  )
-}
-
 export function Header() {
   const { count, subtotal, setOpen, wishlist } = useCart()
   const { user, openLogin, logout } = useAuth()
@@ -265,7 +256,6 @@ export function Header() {
           solid ? 'border-b border-line bg-white text-ink' : 'border-b border-line bg-white text-ink md:border-transparent md:bg-transparent md:text-white'
         }`}
       >
-        {!scrolled && <TopStrip />}
         <div className="relative mx-auto grid h-[60px] grid-cols-[1fr_auto_1fr] items-center px-4 md:h-[76px] md:px-10">
           <div className="flex items-center gap-5 md:gap-6">
             <button onClick={() => setMenu(true)} className="flex items-center gap-2.5 text-[14px]" aria-label="Open menu">

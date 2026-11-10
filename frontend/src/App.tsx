@@ -20,7 +20,7 @@ function Shop() {
   return (
     <>
       <Header />
-      <main className="pt-[88px] md:pt-0">
+      <main className="pt-[60px] md:pt-0">
         <Hero />
         <p className="border-b border-line py-3 text-center text-[13px] text-muted md:hidden">Delivery: Inside Dhaka ৳70 · Outside Dhaka ৳130</p>
         <Creations />
