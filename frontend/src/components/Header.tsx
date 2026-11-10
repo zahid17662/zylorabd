@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Heart, LayoutDashboard, LogOut, Menu, Phone, Search, ShoppingBag, User, X } from 'lucide-react'
+import { ChevronDown, Heart, LayoutDashboard, LogOut, Menu, Phone, Search, ShoppingBag, User, X } from 'lucide-react'
 import { useCart } from '../cart'
 import { img, taka } from '../data'
 import { useAuth } from '../auth'
@@ -127,6 +127,77 @@ function SearchPanel({ open, onClose }: { open: boolean; onClose: () => void }) 
   )
 }
 
+function WishlistPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { wishlist, toggleWish, setViewing } = useCart()
+  const { products } = useCatalog()
+  const saved = products.filter((p) => wishlist.includes(p.id))
+  useEffect(() => {
+    if (!open) return
+    const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [open, onClose])
+  return (
+    <div className={`fixed inset-0 z-[60] ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
+      <div className={`absolute inset-0 bg-black/40 transition-opacity duration-500 ${open ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} />
+      <aside className={`absolute inset-y-0 right-0 flex w-full max-w-[420px] flex-col bg-white transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <h2 className="font-serif text-[24px]">Wishlist <span className="text-[14px] text-muted">({saved.length})</span></h2>
+          <button onClick={onClose} aria-label="Close wishlist" className="grid size-10 place-items-center"><X className="size-5" strokeWidth={1.5} /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          {saved.length === 0 ? (
+            <p className="pt-10 text-center text-[14px] text-muted">Tap the heart on any piece to save it here.</p>
+          ) : (
+            <ul className="space-y-4">
+              {saved.map((p) => (
+                <li key={p.id} className="flex gap-3">
+                  <button onClick={() => { onClose(); setViewing(p) }} className="size-20 shrink-0 overflow-hidden bg-cream" aria-label={`View ${p.title}`}>
+                    <img src={img(p.image, 160, 200)} alt="" className="size-full object-cover" />
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] leading-snug">{p.title}</p>
+                    <p className="text-[13px] text-muted">{taka(p.salePrice ?? p.price)}</p>
+                    <div className="mt-2 flex gap-4 text-[13px]">
+                      <button onClick={() => { onClose(); setViewing(p) }} className="underline underline-offset-4">View</button>
+                      <button onClick={() => toggleWish(p.id)} className="text-muted underline underline-offset-4">Remove</button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </aside>
+    </div>
+  )
+}
+
+const PERKS = [
+  'Cash on Delivery anywhere in Bangladesh',
+  'Pay with bKash, Nagad, Visa or Mastercard',
+  'Delivery ৳70 inside Dhaka · ৳130 outside',
+  '7-Day Exchange',
+]
+
+/** Mobile-only strip above the header; the chevron reveals the full list. */
+function PerksBar() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="bg-black text-white md:hidden">
+      <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex h-9 w-full items-center justify-center gap-3 px-4 text-[12px] font-medium tracking-wide uppercase">
+        <span className="truncate">Cash on Delivery · Delivery from ৳70</span>
+        <ChevronDown className={`size-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <ul className="space-y-2 border-t border-white/15 px-4 py-3 text-center text-[12px] text-white/85">
+          {PERKS.map((t) => <li key={t}>{t}</li>)}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export function Header() {
   const { count, subtotal, setOpen, wishlist } = useCart()
   const { user, openLogin, logout } = useAuth()
@@ -135,6 +206,7 @@ export function Header() {
   const [menu, setMenu] = useState(false)
   const [search, setSearch] = useState(false)
   const [acct, setAcct] = useState(false)
+  const [wish, setWish] = useState(false)
 
   useEffect(() => {
     if (!acct) return
@@ -162,13 +234,18 @@ export function Header() {
           solid ? 'border-b border-line bg-white text-ink' : 'border-b border-transparent bg-transparent text-white'
         }`}
       >
-        <div className="relative mx-auto flex h-[64px] items-center justify-between px-4 md:grid md:h-[76px] md:grid-cols-[1fr_auto_1fr] md:px-10">
-          <div className="hidden items-center gap-6 md:flex">
+        {!scrolled && <PerksBar />}
+        <div className="relative mx-auto grid h-[56px] grid-cols-[1fr_auto_1fr] items-center px-4 md:h-[76px] md:px-10">
+          <div className="flex items-center gap-5 md:gap-6">
             <button onClick={() => setMenu(true)} className="flex items-center gap-2.5 text-[14px]" aria-label="Open menu">
-              <Menu className="size-5" strokeWidth={1.25} />
+              <Menu className="size-[23px] md:size-5" strokeWidth={1.4} />
               <span className="hidden md:inline">Menu</span>
             </button>
-            <button onClick={() => setSearch(true)} className="flex items-center gap-2.5 text-[14px]" aria-label="Search">
+            <button onClick={() => setWish(true)} className="relative md:hidden" aria-label={`Wishlist, ${wishlist.length} items`}>
+              <Heart className="size-[21px]" strokeWidth={1.4} />
+              {wishlist.length > 0 && <span className="absolute -top-1 -right-1.5 size-2 rounded-full bg-wine" />}
+            </button>
+            <button onClick={() => setSearch(true)} className="hidden items-center gap-2.5 text-[14px] md:flex" aria-label="Search">
               <Search className="size-[18px]" strokeWidth={1.25} />
               <span className="hidden md:inline">Search</span>
             </button>
@@ -178,14 +255,11 @@ export function Header() {
             <Logo className="text-[18px] md:text-[24px]" />
           </a>
 
-          <div className="flex items-center justify-end gap-5 md:gap-6">
-            <button onClick={() => setSearch(true)} className="md:hidden" aria-label="Search">
-              <Search className="size-[21px]" strokeWidth={1.4} />
-            </button>
+          <div className="flex items-center justify-end gap-4 md:gap-6">
             <a href="tel:+8801700000000" className="hidden items-center gap-2 text-[14px] xl:flex">
               <Phone className="size-4" strokeWidth={1.25} /> Call us
             </a>
-            <button className="relative hidden sm:block" aria-label={`Wishlist, ${wishlist.length} items`}>
+            <button onClick={() => setWish(true)} className="relative hidden md:block" aria-label={`Wishlist, ${wishlist.length} items`}>
               <Heart className="size-[19px]" strokeWidth={1.25} />
               {wishlist.length > 0 && <span className="absolute -top-0.5 -right-1 size-2 rounded-full bg-wine" />}
             </button>
@@ -194,7 +268,10 @@ export function Header() {
                 className="flex items-center gap-2 text-[13px]" aria-label={user ? `Account of ${user.name}` : 'Sign in'} aria-expanded={acct}
                 onClick={() => (user ? setAcct((v) => !v) : openLogin())}
               >
-                <User className="size-[21px] md:size-[19px]" strokeWidth={1.4} />
+                <span className="relative">
+                  <User className="size-[21px] md:size-[19px]" strokeWidth={1.4} />
+                  {user && <span className="absolute -top-1 -right-1.5 size-2 rounded-full bg-emerald-500" />}
+                </span>
                 {user && <span className="hidden max-w-[90px] truncate lg:inline">{user.name.split(' ')[0]}</span>}
               </button>
               {acct && user && (
@@ -213,6 +290,9 @@ export function Header() {
                 </>
               )}
             </div>
+            <button onClick={() => setSearch(true)} className="md:hidden" aria-label="Search">
+              <Search className="size-[21px]" strokeWidth={1.4} />
+            </button>
             <button onClick={() => setOpen(true)} className="flex items-center gap-2.5" aria-label={`Shopping bag, ${count} items`}>
               <span className="hidden text-[14px] tabular-nums lg:inline">{taka(subtotal)}</span>
               <span className="relative">
@@ -224,14 +304,12 @@ export function Header() {
                 )}
               </span>
             </button>
-            <button onClick={() => setMenu(true)} className="md:hidden" aria-label="Open menu">
-              <Menu className="size-[23px]" strokeWidth={1.4} />
-            </button>
           </div>
         </div>
       </header>
       <MenuDrawer open={menu} onClose={() => setMenu(false)} />
       <SearchPanel open={search} onClose={() => setSearch(false)} />
+      <WishlistPanel open={wish} onClose={() => setWish(false)} />
     </>
   )
 }
