@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, Heart, LayoutDashboard, LogOut, Menu, Phone, Search, ShoppingBag, User, X } from 'lucide-react'
+import { Heart, LayoutDashboard, LogOut, Menu, Phone, Search, ShoppingBag, User, X } from 'lucide-react'
 import { useCart } from '../cart'
 import { img, taka } from '../data'
 import { useAuth } from '../auth'
@@ -18,8 +18,9 @@ export const MENU = [
 
 const SECONDARY = ['Zylora Services', 'Track Your Order', 'Size Guide', 'Contact Us']
 
-function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+function MenuDrawer({ open, onClose, onWishlist }: { open: boolean; onClose: () => void; onWishlist: () => void }) {
   const { user, openLogin, logout } = useAuth()
+  const { wishlist } = useCart()
   return (
     <div className={`fixed inset-0 z-[60] ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
       <div className={`absolute inset-0 bg-black/40 transition-opacity duration-500 ${open ? 'opacity-100' : 'opacity-0'}`} onClick={onClose} />
@@ -52,6 +53,9 @@ function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           ) : (
             <button onClick={() => { onClose(); openLogin() }} className="w-full rounded-full bg-ink py-3 text-[14px] text-white">Sign in / Create account</button>
           )}
+          <button onClick={() => { onClose(); onWishlist() }} className="flex items-center gap-2 text-[14px] text-muted hover:text-ink">
+            <Heart className="size-4" strokeWidth={1.4} /> Wishlist ({wishlist.length})
+          </button>
           {SECONDARY.map((s) => (
             <a key={s} href="#services" onClick={onClose} className="block text-[14px] text-muted hover:text-ink">
               {s}
@@ -173,28 +177,12 @@ function WishlistPanel({ open, onClose }: { open: boolean; onClose: () => void }
   )
 }
 
-const PERKS = [
-  'Cash on Delivery anywhere in Bangladesh',
-  'Pay with bKash, Nagad, Visa or Mastercard',
-  'Delivery ৳70 inside Dhaka · ৳130 outside',
-  '7-Day Exchange',
-]
-
-/** Mobile-only strip above the header; the chevron reveals the full list. */
-function PerksBar() {
-  const [open, setOpen] = useState(false)
+/** Slim mobile-only strip above the header. */
+function TopStrip() {
   return (
-    <div className="bg-black text-white md:hidden">
-      <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex h-9 w-full items-center justify-center gap-3 px-4 text-[12px] font-medium tracking-wide uppercase">
-        <span className="truncate">Cash on Delivery · Delivery from ৳70</span>
-        <ChevronDown className={`size-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <ul className="space-y-2 border-t border-white/15 px-4 py-3 text-center text-[12px] text-white/85">
-          {PERKS.map((t) => <li key={t}>{t}</li>)}
-        </ul>
-      )}
-    </div>
+    <p className="flex h-7 items-center justify-center bg-black px-4 text-[11px] font-medium tracking-wider text-white uppercase md:hidden">
+      Cash on Delivery · bKash · Nagad · Cards
+    </p>
   )
 }
 
@@ -231,31 +219,27 @@ export function Header() {
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${
-          solid ? 'border-b border-line bg-white text-ink' : 'border-b border-transparent bg-transparent text-white'
+          solid ? 'border-b border-line bg-white text-ink' : 'border-b border-line bg-white text-ink md:border-transparent md:bg-transparent md:text-white'
         }`}
       >
-        {!scrolled && <PerksBar />}
-        <div className="relative mx-auto grid h-[56px] grid-cols-[1fr_auto_1fr] items-center px-4 md:h-[76px] md:px-10">
+        {!scrolled && <TopStrip />}
+        <div className="relative mx-auto grid h-[60px] grid-cols-[1fr_auto_1fr] items-center px-4 md:h-[76px] md:px-10">
           <div className="flex items-center gap-5 md:gap-6">
             <button onClick={() => setMenu(true)} className="flex items-center gap-2.5 text-[14px]" aria-label="Open menu">
               <Menu className="size-[23px] md:size-5" strokeWidth={1.4} />
               <span className="hidden md:inline">Menu</span>
             </button>
-            <button onClick={() => setWish(true)} className="relative md:hidden" aria-label={`Wishlist, ${wishlist.length} items`}>
-              <Heart className="size-[21px]" strokeWidth={1.4} />
-              {wishlist.length > 0 && <span className="absolute -top-1 -right-1.5 size-2 rounded-full bg-wine" />}
-            </button>
-            <button onClick={() => setSearch(true)} className="hidden items-center gap-2.5 text-[14px] md:flex" aria-label="Search">
-              <Search className="size-[18px]" strokeWidth={1.25} />
+            <button onClick={() => setSearch(true)} className="flex items-center gap-2.5 text-[14px]" aria-label="Search">
+              <Search className="size-[22px] md:size-[18px]" strokeWidth={1.4} />
               <span className="hidden md:inline">Search</span>
             </button>
           </div>
 
           <a href="#top" aria-label="Zylora home" className="md:justify-self-center">
-            <Logo className="text-[18px] md:text-[24px]" />
+            <Logo className="text-[22px] md:text-[24px]" />
           </a>
 
-          <div className="flex items-center justify-end gap-4 md:gap-6">
+          <div className="flex items-center justify-end gap-5 md:gap-6">
             <a href="tel:+8801700000000" className="hidden items-center gap-2 text-[14px] xl:flex">
               <Phone className="size-4" strokeWidth={1.25} /> Call us
             </a>
@@ -269,7 +253,7 @@ export function Header() {
                 onClick={() => (user ? setAcct((v) => !v) : openLogin())}
               >
                 <span className="relative">
-                  <User className="size-[21px] md:size-[19px]" strokeWidth={1.4} />
+                  <User className="size-[23px] md:size-[19px]" strokeWidth={1.4} />
                   {user && <span className="absolute -top-1 -right-1.5 size-2 rounded-full bg-emerald-500" />}
                 </span>
                 {user && <span className="hidden max-w-[90px] truncate lg:inline">{user.name.split(' ')[0]}</span>}
@@ -290,24 +274,19 @@ export function Header() {
                 </>
               )}
             </div>
-            <button onClick={() => setSearch(true)} className="md:hidden" aria-label="Search">
-              <Search className="size-[21px]" strokeWidth={1.4} />
-            </button>
             <button onClick={() => setOpen(true)} className="flex items-center gap-2.5" aria-label={`Shopping bag, ${count} items`}>
               <span className="hidden text-[14px] tabular-nums lg:inline">{taka(subtotal)}</span>
               <span className="relative">
-                <ShoppingBag className="size-[21px] md:size-[19px]" strokeWidth={1.4} />
-                {count > 0 && (
-                  <span className={`absolute -top-1.5 -right-2 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-medium ${solid ? 'bg-ink text-white' : 'bg-white text-ink'}`}>
-                    {count}
-                  </span>
-                )}
+                <ShoppingBag className="size-[23px] md:size-[19px]" strokeWidth={1.4} />
+                <span className={`absolute -top-2 -right-2.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-ink px-1 text-[10px] font-medium text-white ${count > 0 ? '' : 'md:hidden'} ${solid ? '' : 'md:bg-white md:text-ink'}`}>
+                  {count}
+                </span>
               </span>
             </button>
           </div>
         </div>
       </header>
-      <MenuDrawer open={menu} onClose={() => setMenu(false)} />
+      <MenuDrawer open={menu} onClose={() => setMenu(false)} onWishlist={() => setWish(true)} />
       <SearchPanel open={search} onClose={() => setSearch(false)} />
       <WishlistPanel open={wish} onClose={() => setWish(false)} />
     </>
