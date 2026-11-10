@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://zylorabd-api.onrender.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://zylorabd-api-x2yv.onrender.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

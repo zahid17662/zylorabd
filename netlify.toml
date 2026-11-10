@@ -9,10 +9,10 @@
   NODE_VERSION = "22"
 
 # Proxy API calls to the Render backend so the browser uses same-origin /api/v1/... paths.
-# Update the target if your Render service URL differs from the one in render.yaml (zylorabd-api).
+# Update the target if your Render service URL differs from the one in render.yaml (zylorabd-api-x2yv).
 [[redirects]]
   from = "/api/*"
-  to = "https://zylorabd-api.onrender.com/api/:splat"
+  to = "https://zylorabd-api-x2yv.onrender.com/api/:splat"
   status = 200
   force = true
 
