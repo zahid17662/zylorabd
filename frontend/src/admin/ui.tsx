@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { Order } from './types'
 
-export const inp = 'w-full rounded-md border border-line bg-white px-3 py-2 text-[14px] outline-none focus:border-ink'
+export const inp = 'w-full rounded-md border border-line bg-white px-3 py-2.5 text-[16px] outline-none focus:border-ink sm:py-2 sm:text-[14px]'
 export const btn =
-  'rounded-full border border-ink px-4 py-1.5 text-[13px] hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:opacity-40'
+  'rounded-full border border-ink px-4 py-2 text-[13px] hover:bg-ink sm:py-1.5 hover:text-white disabled:cursor-not-allowed disabled:opacity-40'
 export const label = 'mb-1 block text-[12px] text-muted'
 
 const PILL: Record<string, string> = {

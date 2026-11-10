@@ -136,7 +136,7 @@ export function ImageField({ images, onAdd, onRemove }: { images: string[]; onAd
       <UploadButton text="Upload from device" accept="image/jpeg,image/png,image/webp" icon={ImagePlus} busy={progress !== null} onFile={(f) => void run(f)} />
       <div className="mt-2 flex gap-2">
         <input
-          className={inp} aria-label="Image URL" placeholder="…or paste an image URL" value={url}
+          className={`${inp} min-w-0`} aria-label="Image URL" placeholder="…or paste an image URL" value={url}
           onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addUrl() } }}
         />
         <button type="button" className={pillBtn} disabled={!url.trim()} onClick={addUrl}>Add URL</button>
@@ -169,7 +169,7 @@ export function VideoField({ url, onChange }: { url: string; onChange: (next: st
       </div>
       <div className="mt-2 flex gap-2">
         <input
-          className={inp} aria-label="Video URL" placeholder="…or paste a video URL" value={draft}
+          className={`${inp} min-w-0`} aria-label="Video URL" placeholder="…or paste a video URL" value={draft}
           onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addUrl() } }}
         />
         <button type="button" className={pillBtn} disabled={!draft.trim()} onClick={addUrl}>Add URL</button>
@@ -204,9 +204,9 @@ export function SizeMatrix({ variants, onChange }: { variants: Variant[]; onChan
         <tbody>
           {variants.map((v) => (
             <tr key={v.size} className="border-t border-line">
-              <td className="py-1.5 pr-3 font-medium">{v.size}</td>
+              <td className="py-1.5 pr-2 font-medium">{v.size}</td>
               <td className="py-1.5 pr-3">
-                <input className={`${inp} !w-24`} type="number" min={0} aria-label={`Stock for size ${v.size}`} value={v.stock_quantity} onChange={(e) => setQty(v.size, e.target.value)} />
+                <input className={`${inp} !w-20 sm:!w-24`} type="number" min={0} aria-label={`Stock for size ${v.size}`} value={v.stock_quantity} onChange={(e) => setQty(v.size, e.target.value)} />
               </td>
               <td className="py-1.5 font-mono text-[12px] break-all text-muted">{v.sku ?? 'auto-generated on save'}</td>
             </tr>
@@ -214,8 +214,8 @@ export function SizeMatrix({ variants, onChange }: { variants: Variant[]; onChan
         </tbody>
       </table>
       <div className="mt-2 flex gap-2">
-        <input className={`${inp} !w-44`} aria-label="Other size name" placeholder="Other size (e.g. Free Size)" maxLength={20} value={extra} onChange={(e) => setExtra(e.target.value)} />
-        <button type="button" className="rounded-full border border-ink px-4 text-[13px]" onClick={addSize}>Add size</button>
+        <input className={`${inp} min-w-0 sm:!w-44`} aria-label="Other size name" placeholder="Other size (e.g. Free Size)" maxLength={20} value={extra} onChange={(e) => setExtra(e.target.value)} />
+        <button type="button" className="shrink-0 rounded-full border border-ink px-4 text-[13px]" onClick={addSize}>Add size</button>
       </div>
     </div>
   )

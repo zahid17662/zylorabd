@@ -9,9 +9,9 @@ const sumRevenue = (rows: SplitRow[]): number => rows.reduce((n, r) => n + Numbe
 
 function Kpi({ label, value, tone = '' }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-lg bg-white p-5">
-      <p className="text-[12px] tracking-widest text-muted uppercase">{label}</p>
-      <p className={`mt-2 font-serif text-[28px] tabular-nums ${tone}`}>{value}</p>
+    <div className="rounded-lg bg-white p-4 sm:p-5">
+      <p className="text-[11px] tracking-widest text-muted uppercase sm:text-[12px]">{label}</p>
+      <p className={`mt-2 font-serif text-[22px] break-words sm:text-[28px] tabular-nums ${tone}`}>{value}</p>
     </div>
   )
 }
@@ -22,7 +22,7 @@ function SplitList({ rows, format }: { rows: SplitRow[]; format?: (key: string) 
     <ul className="space-y-2.5">
       {rows.map((r) => (
         <li key={r.key}>
-          <div className="flex items-baseline justify-between text-[13px]">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-2 text-[13px]">
             <span className="rounded-full bg-cream px-2.5 py-0.5 text-[12px]">{format ? format(r.key) : r.key}</span>
             <span className="tabular-nums">
               {r.orders} <span className="text-muted">· {taka(Number(r.revenue))}</span>
@@ -39,7 +39,7 @@ function SplitList({ rows, format }: { rows: SplitRow[]; format?: (key: string) 
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg bg-white p-5">
+    <section className="rounded-lg bg-white p-4 sm:p-5">
       <h3 className="mb-4 text-[12px] tracking-widest text-muted uppercase">{title}</h3>
       {children}
     </section>
@@ -69,23 +69,24 @@ function RestockRow({ row, onDone }: { row: LowStock; onDone: () => void }) {
   }
 
   return (
-    <tr className="border-b border-line last:border-0">
-      <td className="px-3 py-2">{row.product_title}</td>
-      <td className="px-3 py-2">{row.size}</td>
-      <td className={`px-3 py-2 tabular-nums ${row.stock_quantity === 0 ? 'text-wine' : ''}`}>{row.stock_quantity}</td>
-      <td className="px-3 py-2">
-        <div className="flex items-center gap-2">
-          <input
-            className={`${inp} !w-20`} type="number" min={1} max={10000} value={qty} aria-label={`Units to add to ${row.product_title} ${row.size}`}
-            onChange={(e) => setQty(e.target.value)}
-          />
-          <button className={btn} disabled={busy || !Number.isInteger(add) || add < 1} onClick={restock}>
-            {busy ? 'Saving…' : '+ Restock'}
-          </button>
-        </div>
+    <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line py-3 text-[13px] last:border-0">
+      <div className="min-w-0 flex-1 basis-40">
+        <p className="font-medium break-words">{row.product_title}</p>
+        <p className="text-muted">
+          Size {row.size} · <span className={`tabular-nums ${row.stock_quantity === 0 ? 'text-wine' : ''}`}>{row.stock_quantity} left</span>
+        </p>
         {err && <p role="alert" className="mt-1 text-[12px] text-wine">{err}</p>}
-      </td>
-    </tr>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          className={`${inp} !w-20`} type="number" min={1} max={10000} value={qty} aria-label={`Units to add to ${row.product_title} ${row.size}`}
+          onChange={(e) => setQty(e.target.value)}
+        />
+        <button className={btn} disabled={busy || !Number.isInteger(add) || add < 1} onClick={restock}>
+          {busy ? 'Saving…' : '+ Restock'}
+        </button>
+      </div>
+    </li>
   )
 }
 
@@ -106,8 +107,8 @@ export default function Overview() {
   const source = s.order_attribution_split.order_source.filter((r) => r.orders > 0)
 
   return (
-    <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="space-y-4 sm:space-y-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <Kpi label="Total revenue (paid)" value={taka(Number(s.total_revenue))} />
         <Kpi label="Total orders" value={String(s.total_orders)} />
         <Kpi label="Pending fulfillment" value={String(s.pending_fulfillment)} tone={s.pending_fulfillment > 0 ? 'text-amber-800' : ''} />
@@ -139,16 +140,9 @@ export default function Overview() {
         {s.low_stock_variants.length === 0 ? (
           <p className="text-[13px] text-muted">Every size is comfortably stocked.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[13px]">
-              <thead className="border-b border-line text-muted">
-                <tr>{['Product', 'Size', 'Left', 'Restock'].map((h) => <th key={h} className="px-3 py-2 font-normal">{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {s.low_stock_variants.map((r) => <RestockRow key={r.variant_id} row={r} onDone={load} />)}
-              </tbody>
-            </table>
-          </div>
+          <ul>
+            {s.low_stock_variants.map((r) => <RestockRow key={r.variant_id} row={r} onDone={load} />)}
+          </ul>
         )}
       </Panel>
     </div>

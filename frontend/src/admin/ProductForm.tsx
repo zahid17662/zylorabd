@@ -66,9 +66,9 @@ export function ProductForm({ initial, onClose, onSaved }: { initial: Form; onCl
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-3 sm:p-4">
       <form
         onSubmit={submit} role="dialog" aria-modal="true" aria-label={f.id ? 'Edit product' : 'New product'}
-        className="mx-auto my-4 w-full max-w-[680px] space-y-4 rounded-lg bg-white p-5 sm:p-7"
+        className="mx-auto my-2 w-full max-w-[680px] space-y-4 rounded-lg bg-white p-4 sm:my-4 sm:p-7"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="font-serif text-[24px]">{f.id ? 'Edit product' : 'New product'}</h3>
           <label className="flex items-center gap-2 text-[13px]">
             <input type="checkbox" checked={f.is_active} onChange={(e) => set('is_active', e.target.checked)} /> Visible in store
@@ -85,7 +85,7 @@ export function ProductForm({ initial, onClose, onSaved }: { initial: Form; onCl
         <VideoField url={f.video_url} onChange={(v) => set('video_url', v)} />
         <SizeMatrix variants={f.variants} onChange={(v) => set('variants', v)} />
         {err && <p role="alert" className="text-[13px] text-wine">{err}</p>}
-        <div className="flex justify-end gap-2 border-t border-line pt-4">
+        <div className="sticky bottom-0 -mx-4 -mb-4 flex justify-end gap-2 rounded-b-lg border-t border-line bg-white px-4 py-3 sm:static sm:mx-0 sm:mb-0 sm:px-0 sm:pb-0">
           <button type="button" className={btn} onClick={onClose}>Cancel</button>
           <button disabled={busy} className="rounded-full bg-ink px-6 py-1.5 text-[13px] text-white disabled:opacity-50">{busy ? 'Saving…' : 'Save product'}</button>
         </div>

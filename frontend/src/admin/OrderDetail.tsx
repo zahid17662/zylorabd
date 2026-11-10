@@ -25,19 +25,19 @@ export function OrderDetail({ orderId, onClose }: { orderId: string; onClose: ()
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-3 sm:p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label="Order details" onClick={(e) => e.stopPropagation()} className="mx-auto my-4 w-full max-w-[720px] rounded-lg bg-white p-5 sm:p-7">
+      <div role="dialog" aria-modal="true" aria-label="Order details" onClick={(e) => e.stopPropagation()} className="mx-auto my-2 w-full max-w-[720px] rounded-lg bg-white p-4 sm:my-4 sm:p-7">
         {err && <p role="alert" className="text-wine">{err}</p>}
         {!o && !err && <p className="text-muted">Loading…</p>}
         {o && (
           <>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-serif text-[26px] leading-tight">{o.order_number}</h3>
+                <h3 className="font-serif text-[22px] leading-tight break-all sm:text-[26px]">{o.order_number}</h3>
                 <p className="text-[13px] text-muted">{when(o.created_at)}</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <Pill v={o.order_status} />
-                <button autoFocus onClick={onClose} aria-label="Close" className="grid size-8 place-items-center rounded-full hover:bg-cream"><X className="size-5" /></button>
+                <button autoFocus onClick={onClose} aria-label="Close" className="grid size-10 place-items-center rounded-full sm:size-8 hover:bg-cream"><X className="size-5" /></button>
               </div>
             </div>
 
@@ -59,20 +59,20 @@ export function OrderDetail({ orderId, onClose }: { orderId: string; onClose: ()
               </div>
             </div>
 
-            <table className="mt-5 w-full text-left text-[13px]">
+            <div className="mt-5 overflow-x-auto"><table className="w-full text-left text-[13px]">
               <thead className="border-b border-line text-muted"><tr>{['Item', 'Size', 'Qty', 'Amount'].map((h) => <th key={h} className="py-2 font-normal">{h}</th>)}</tr></thead>
               <tbody>
                 {o.items.map((i, k) => (
                   <tr key={k} className="border-b border-line"><td className="py-2 pr-2">{i.product_title}</td><td>{i.size}</td><td>{i.quantity}</td><td>{taka(Number(i.unit_price) * i.quantity)}</td></tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
             <p className="mt-2 text-right text-[13px] text-muted">Delivery {taka(Number(o.shipping_fee))}</p>
             <p className="text-right text-[16px] font-medium">Total {taka(Number(o.total_amount))}</p>
             <p className="text-right text-[13px]">COD to collect: <strong>{taka(codCollectible(o))}</strong></p>
 
             <div className="mt-5 flex justify-end">
-              <button className="rounded-full bg-ink px-6 py-2 text-[13px] text-white" onClick={() => window.print()}>Print Invoice / Courier Slip</button>
+              <button className="w-full rounded-full bg-ink px-6 py-3 sm:w-auto sm:py-2 text-[13px] text-white" onClick={() => window.print()}>Print Invoice / Courier Slip</button>
             </div>
             <OrderSlip order={o} />
           </>

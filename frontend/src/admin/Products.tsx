@@ -72,13 +72,43 @@ export default function Products() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-serif text-[24px]">Products & Media</h2>
+      <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
+        <h2 className="font-serif text-[22px] sm:text-[24px]">Products & Media</h2>
         <button className={btn} onClick={() => setForm(blankForm())}>+ New product</button>
       </div>
       {err && <p role="alert" className="mb-3 text-wine">{err}</p>}
       {notice && <p role="status" className="mb-3 text-[13px] text-emerald-800">{notice}</p>}
-      <div className="overflow-x-auto rounded-lg bg-white">
+      <ul className="space-y-3 md:hidden">
+        {list.map((p) => (
+          <li key={p.id} className={`rounded-lg p-4 text-[13px] ${p.is_active ? 'bg-white' : 'bg-stone-50 text-muted'}`}>
+            <div className="flex gap-3">
+              <div className="shrink-0">
+                {p.images[0] ? <ProductImage variant="admin" src={p.images[0]} /> : <div className="h-14 w-12 rounded-md bg-slate-100" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium break-words">{p.title}</p>
+                <p className="mt-0.5 flex flex-wrap items-center gap-2 text-muted">
+                  {p.category}
+                  {p.video_url && <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] text-indigo-900"><Video className="size-3" /> Video</span>}
+                  {!p.is_active && <span className="rounded-full bg-stone-200 px-2 py-0.5 text-[11px] text-stone-700">Archived</span>}
+                </p>
+                <p className="mt-1">
+                  {taka(Number(p.final_price))}
+                  {Number(p.discount_percent) > 0 && <> <span className="text-muted line-through">{taka(Number(p.base_price))}</span> <span className="text-wine">−{Number(p.discount_percent)}%</span></>}
+                </p>
+              </div>
+              <Toggle on={p.is_active} busy={busyId === p.id} label={`${p.title} visible in store`} onChange={(v) => setActive(p, v)} />
+            </div>
+            <div className="mt-3"><SizePills product={p} /><p className="mt-1 text-[12px] text-muted">{p.total_stock} total</p></div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button className={btn} disabled={busyId === p.id} onClick={() => setForm(toForm(p))}>Edit</button>
+              <button className={btn} disabled={busyId === p.id} onClick={() => archive(p)}>Archive</button>
+            </div>
+          </li>
+        ))}
+        {list.length === 0 && !err && <li className="rounded-lg bg-white px-4 py-10 text-center text-[13px] text-muted">No products yet.</li>}
+      </ul>
+      <div className="hidden overflow-x-auto rounded-lg bg-white md:block">
         <table className="w-full text-left text-[13px]">
           <thead className="border-b border-line text-muted">
             <tr>{['', 'Product', 'Price', 'Sizes (stock)', 'Visible', ''].map((h, i) => <th key={i} className="px-4 py-3 font-normal">{h}</th>)}</tr>

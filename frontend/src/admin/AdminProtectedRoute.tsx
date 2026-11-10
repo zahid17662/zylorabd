@@ -32,7 +32,7 @@ function Login({ onDone, denied, notice }: { onDone: (u: User) => void; denied: 
   }
   return (
     <div className="grid min-h-svh place-items-center bg-cream p-4">
-      <form onSubmit={submit} className="w-full max-w-[380px] space-y-3 rounded-lg bg-white p-8">
+      <form onSubmit={submit} className="w-full max-w-[380px] space-y-3 rounded-lg bg-white p-6 sm:p-8">
         <h1 className="font-serif text-[28px]">Admin sign in</h1>
         <input className={inp} aria-label="Email" type="email" autoComplete="username" placeholder="Email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <input className={inp} aria-label="Password" type="password" autoComplete="current-password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} />

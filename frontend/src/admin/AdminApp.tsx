@@ -20,11 +20,14 @@ export default function AdminApp() {
       {(user, signOut) => (
         <div className="min-h-svh bg-cream text-ink md:flex">
           <aside className="border-b border-line bg-white md:sticky md:top-0 md:h-svh md:w-60 md:shrink-0 md:border-r md:border-b-0">
-            <div className="flex items-center justify-between px-5 py-4 md:block">
-              <h1 className="font-serif text-[22px]">Zylora Admin</h1>
-              <button className={`${btn} md:hidden`} onClick={signOut}>Sign out</button>
+            <div className="flex items-center justify-between px-4 py-3 md:block md:px-5 md:py-4">
+              <h1 className="font-serif text-[20px] md:text-[22px]">Zylora Admin</h1>
+              <div className="flex items-center gap-3 md:hidden">
+                <a href="/" className="text-[13px] text-muted underline">View store</a>
+                <button className={btn} onClick={signOut}>Sign out</button>
+              </div>
             </div>
-            <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:pb-0" aria-label="Admin sections">
+            <nav className="flex gap-1 overflow-x-auto px-3 pb-3 [scrollbar-width:none] md:flex-col md:pb-0" aria-label="Admin sections">
               {TABS.map((t) => (
                 <button
                   key={t.id} onClick={() => setTab(t.id)} aria-current={tab === t.id ? 'page' : undefined}
@@ -40,7 +43,7 @@ export default function AdminApp() {
               <button className={`${btn} mt-2`} onClick={signOut}>Sign out</button>
             </div>
           </aside>
-          <main className="min-w-0 flex-1 p-4 sm:p-6">
+          <main className="min-w-0 flex-1 p-3 sm:p-6">
             {tab === 'overview' && <Overview />}
             {tab === 'products' && <Products />}
             {tab === 'orders' && <Orders />}
