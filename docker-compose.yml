@@ -1,6 +1,6 @@
 # Run the API locally or on a VPS:   docker compose up --build -d
 # Configuration comes from backend/.env (copy backend/.env.example and fill it in).
-# The database is Neon (hosted), so no database container is needed.
+# The database is Supabase (hosted), so no database container is needed.
 services:
   api:
     build: ./backend

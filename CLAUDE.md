@@ -4,7 +4,7 @@
 
 ## Tech Stack
 - **Backend** (`backend/`): Python 3.11+, FastAPI, SQLAlchemy 2.0 (async), `asyncpg`, Pydantic v2, Alembic
-- **Database:** Neon serverless PostgreSQL (`ap-southeast-1`, PgBouncer pooler)
+- **Database:** Supabase PostgreSQL (`ap-southeast-1`, transaction pooler on port 6543). Row Level Security is ON for every table with no policies: the API connects directly as `postgres`, and the public Supabase REST API must stay closed.
 - **Media storage:** Cloudflare R2 / S3 via `boto3` presigned PUT URLs. Never stream video uploads through FastAPI.
 - **Frontend** (`frontend/`, source in `frontend/src/`): React 19, Vite, Tailwind 4, Lucide icons, `fetch` via `frontend/src/api.ts` (no Axios)
 - **Auth:** JWT access token + rotating refresh token. Email/password, phone OTP (BD SMS gateway hook), Facebook login.
@@ -12,16 +12,16 @@
 
 ## Mandatory workflows (ECC)
 1. Follow the loop: plan -> test -> implement -> review -> verify.
-2. Database (`postgres-patterns`, `database-reviewer`): keep `statement_cache_size=0` and `ssl=True` in `connect_args` (Neon PgBouncer). Always `SELECT ... FOR UPDATE` (ordered by id) when deducting variant stock.
+2. Database (`postgres-patterns`, `database-reviewer`): keep `statement_cache_size=0` and `ssl=True` in `connect_args` (Supabase pooler; `DB_SSL=require` if certificate verification fails). Always `SELECT ... FOR UPDATE` (ordered by id) when deducting variant stock.
 3. Security (`security-review`, `fastapi-reviewer`): never trust frontend prices. Verify webhooks (`RT-UDDOKTAPAY-API-KEY` header plus server-side `verify-payment`) and keep them idempotent.
 4. Frontend (`frontend-patterns`, `react-reviewer`): product videos lazy-load (`preload="metadata"`, `playsInline`); size pills (S, M, L, XL, XXL) disable out-of-stock variants.
 5. Tests (`tdd-workflow`): target 80%+ coverage on checkout concurrency, auth and payment webhooks before marking a task complete.
 
 ## Hard rules
-- Never commit `backend/.env` or print its contents (it holds the Neon password).
-- No destructive Neon operations (TRUNCATE/DELETE on real data) without an explicit user go-ahead.
+- Never commit `backend/.env` or print its contents (it holds the database password).
+- No destructive database operations (TRUNCATE/DELETE on real data) without an explicit user go-ahead.
 
 ## Status notes (update as work lands)
-- Backend tests: 47 passing in `backend/tests/` (checkout race, webhooks, auth, admin, sweeper), 92% coverage. They use a throwaway schema in Neon and drop it afterwards. Run: `cd backend && pytest --cov=app`.
+- Backend tests: 47 passing in `backend/tests/` (checkout race, webhooks, auth, admin, sweeper), 92% coverage. They use a throwaway schema (locally) or a Postgres service container (GitHub Actions) and never touch real data. Run: `cd backend && pytest --cov=app`.
 - Storefront: product page (gallery, lazy video, live stock size pills), Facebook button (needs `VITE_FACEBOOK_APP_ID`), payment return page, BD phone validation are built.
 - Still needs real credentials to verify: R2 uploads, UddoktaPay sandbox, SMS provider, Facebook app. See `HANDOVER_GUIDE.md` and `PLAN.md`.

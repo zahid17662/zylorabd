@@ -7,10 +7,10 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     plan: free
-    region: singapore # closest to the Neon database (ap-southeast-1)
+    region: singapore # closest to the Supabase database (ap-southeast-1)
     healthCheckPath: /health
     envVars:
-      - key: DATABASE_URL # your Neon pooler URL
+      - key: DATABASE_URL # Supabase Transaction pooler URL (port 6543)
         sync: false
       - key: JWT_SECRET
         generateValue: true

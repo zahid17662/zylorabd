@@ -6,7 +6,7 @@ A mobile-first apparel store. Customers browse, pick a size, sign in (email, pho
 |---|---|---|
 | Storefront + admin (`frontend/`) | React, Vite, Tailwind | Vercel or Cloudflare Pages (static) |
 | API (`backend/`) | FastAPI, async SQLAlchemy | Render, Railway, or any VPS (Docker) |
-| Database | Neon PostgreSQL | Neon (hosted) |
+| Database | Supabase PostgreSQL | Supabase (hosted) |
 | Photos and videos | Cloudflare R2 (S3-compatible) | Cloudflare, served through a CDN domain |
 | Online payments | UddoktaPay (bKash, Nagad, cards) | UddoktaPay |
 
@@ -18,7 +18,8 @@ All backend settings live in `backend/.env`. Copy `backend/.env.example` to `bac
 
 | Variable | What it is |
 |---|---|
-| `DATABASE_URL` | Neon connection string (use the **pooler** URL). Rotate the password in the Neon console if it was ever shared. |
+| `DATABASE_URL` | Supabase connection string: Project > Connect > **Transaction pooler** (port 6543). Reset the database password in Supabase if it was ever shared. |
+| `DB_SSL` | `true` (default, verifies the certificate). If the API fails with "certificate verify failed", set `require`. |
 | `JWT_SECRET` | Long random secret that signs logins. Generate: `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Changing it logs everyone out. |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_PHONE` (optional) | Read by `python -m scripts.seed_admin`, which creates the first admin or promotes the matching existing user. Safe to re-run; it never overwrites an existing password. Change the password after first login. |
 | `CORS_ORIGINS` | Your storefront address(es), comma-separated, e.g. `https://zylora.com`. No `*`. |
@@ -57,7 +58,7 @@ cd backend && uvicorn app.main:app --reload     # API on http://localhost:8000  
 cd frontend && npm install && npm run dev      # storefront on the Vite port
 ```
 
-Run the tests: `cd backend && pip install -r requirements-dev.txt && pytest`. They create a temporary schema in the Neon database and delete it afterwards, so real data is never touched.
+Run the tests: `cd backend && pip install -r requirements-dev.txt && pytest`. Use a throwaway local Postgres (set `DB_SSL=false`), never the production database. GitHub Actions does this automatically on every push.
 
 ## 4. Managing the shop (admin)
 
@@ -106,7 +107,7 @@ Put Nginx or Caddy in front for HTTPS and proxy to port 8000. Check with `curl h
 - Add the final storefront address to the API's `CORS_ORIGINS`.
 
 ## 7. Before going live: checklist
-- [ ] Rotate the Neon password and set real `JWT_SECRET`, `ADMIN_PASSWORD`.
+- [ ] Reset the Supabase database password if it was ever shared, and set real `JWT_SECRET`, `ADMIN_PASSWORD`.
 - [ ] Switch UddoktaPay from sandbox to live and run one real test payment end to end.
 - [ ] Configure the SMS provider and confirm an OTP text arrives.
 - [ ] R2 bucket CORS and CDN domain set; upload one image and one video from `/admin`.
