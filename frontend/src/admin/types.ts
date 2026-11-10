@@ -22,7 +22,7 @@ export type Order = {
   payment_method: 'cod' | 'online'
   payment_status: PaymentStatus
   order_status: OrderStatus
-  login_method: 'email' | 'phone' | 'facebook'
+  login_method: 'email' | 'phone' | 'facebook' | 'google'
   order_source: string | null
   utm: Record<string, string> | null
   customer_name: string

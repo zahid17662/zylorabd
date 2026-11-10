@@ -54,7 +54,7 @@ export function useDebounced<T>(value: T, ms = 300): T {
 const PROVIDER_LABEL: Record<string, string> = { bkash: 'bKash', nagad: 'Nagad', card: 'Card', online: 'Online' }
 export const providerLabel = (p: string): string => PROVIDER_LABEL[p.toLowerCase()] ?? p
 
-const CHANNEL_LABEL: Record<Order['login_method'], string> = { facebook: 'FB Login', phone: 'Phone Login', email: 'Email Login' }
+const CHANNEL_LABEL: Record<Order['login_method'], string> = { facebook: 'FB Login', google: 'Google Login', phone: 'Phone Login', email: 'Email Login' }
 
 /** "FB Login • FB_AD" */
 export const attributionLabel = (o: Pick<Order, 'login_method' | 'order_source'>): string =>

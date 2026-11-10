@@ -140,12 +140,46 @@ async def _login_facebook(body: LoginIn, db: AsyncSession) -> User:
     return user
 
 
+async def _login_google(body: LoginIn, db: AsyncSession) -> User:
+    if not body.google_id_token:
+        raise HTTPException(422, "google_id_token is required")
+    if not settings.google_client_id:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Google sign-in is not configured")
+    # Google validates the signature and expiry; we still check who the token was issued for.
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get("https://oauth2.googleapis.com/tokeninfo", params={"id_token": body.google_id_token})
+    claims = resp.json() if resp.status_code == 200 else {}
+    # The token must be issued for *our* client id, or a token minted for any other Google app would work.
+    if claims.get("aud") != settings.google_client_id or claims.get("iss") not in ("accounts.google.com", "https://accounts.google.com"):
+        raise BAD_CREDS
+    email = (claims.get("email") or "").lower()
+    if not email or str(claims.get("email_verified")).lower() != "true":
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Your Google email address is not verified")
+    user = await db.scalar(select(User).where(User.email == email))
+    if user is None:
+        user = User(
+            name=claims.get("name") or email.split("@")[0], email=email, password_hash=None,
+            auth_provider=AuthProvider.google, role=Role.customer,
+        )
+        db.add(user)
+        try:
+            await db.flush()
+        except IntegrityError:  # two first-time sign-ins racing: use the row the other request created
+            await db.rollback()
+            user = await db.scalar(select(User).where(User.email == email))
+    elif user.role == Role.admin:
+        # An admin account is only ever entered with its password.
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Admin accounts must sign in with email and password")
+    return user
+
+
 @router.post("/login", response_model=TokenOut, dependencies=[Depends(rate_limit("login", 15, 60))])
 async def login(body: LoginIn, db: AsyncSession = Depends(get_db)):
     handler = {
         AuthProvider.email: _login_email,
         AuthProvider.phone: _login_phone,
         AuthProvider.facebook: _login_facebook,
+        AuthProvider.google: _login_google,
     }[body.method]
     user = await handler(body, db)
     return await issue_tokens(db, user, body.method)

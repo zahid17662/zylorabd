@@ -12,7 +12,7 @@ const NO_FILTERS: Filters = { q: '', order_status: '', pay: '', payment_status: 
 
 const STATUS_OPTIONS = ['pending', 'awaiting_payment', 'confirmed', 'shipped', 'delivered', 'cancelled']
 const PAY_OPTIONS: [string, string][] = [['cod', 'COD'], ['bkash', 'bKash'], ['nagad', 'Nagad'], ['card', 'Card']]
-const LOGIN_OPTIONS: [string, string][] = [['facebook', 'Facebook'], ['phone', 'Phone'], ['email', 'Email']]
+const LOGIN_OPTIONS: [string, string][] = [['facebook', 'Facebook'], ['google', 'Google'], ['phone', 'Phone'], ['email', 'Email']]
 const PAID_OPTIONS: [string, string][] = [['paid', 'Paid'], ['unpaid', 'Unpaid'], ['pending', 'Pending'], ['failed', 'Failed'], ['refunded', 'Refunded']]
 
 function queryString(f: Filters, page: number): string {

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
 
     facebook_app_id: str = ""
     facebook_app_secret: str = ""
+    google_client_id: str = ""  # OAuth "Web application" client id; enables Continue with Google
 
     sms_api_url: str = ""
     sms_api_key: str = ""

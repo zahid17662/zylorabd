@@ -32,6 +32,7 @@ class LoginIn(BaseModel):
     otp: str | None = Field(default=None, min_length=6, max_length=6)
     name: str | None = Field(default=None, max_length=120)  # used when a phone/FB account is first created
     facebook_access_token: str | None = None
+    google_id_token: str | None = None
 
 
 class ChangePasswordIn(BaseModel):

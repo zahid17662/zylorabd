@@ -23,6 +23,7 @@ class AuthProvider(str, enum.Enum):
     email = "email"
     phone = "phone"
     facebook = "facebook"
+    google = "google"
 
 
 class User(Base):

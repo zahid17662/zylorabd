@@ -256,3 +256,49 @@ async def test_unexpected_errors_return_a_clean_500(client, monkeypatch):
         r = await c.get("/api/v1/products")
     assert r.status_code == 500
     assert r.json() == {"detail": "Something went wrong on our side."}  # no stack trace or internals leaked
+
+
+def fake_google(monkeypatch, **claims):
+    base = {"aud": "GCLIENT", "iss": "https://accounts.google.com", "email": "G.Buyer@example.com", "email_verified": "true", "name": "G Buyer"}
+    base.update(claims)
+
+    class FakeClient:
+        def __init__(self, *a, **k): ...
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+        async def get(self, url, params=None):
+            return FakeResp(200 if base else 400, base)
+
+    monkeypatch.setattr("app.api.v1.auth.httpx.AsyncClient", FakeClient)
+
+
+async def test_google_login_creates_then_reuses_account(client, monkeypatch):
+    monkeypatch.setattr(settings, "google_client_id", "GCLIENT")
+    fake_google(monkeypatch)
+    r = await client.post("/api/v1/auth/login", json={"method": "google", "google_id_token": "tok"})
+    assert r.status_code == 200
+    me = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {r.json()['access_token']}"})
+    assert me.json()["email"] == "g.buyer@example.com" and me.json()["name"] == "G Buyer"
+    again = await client.post("/api/v1/auth/login", json={"method": "google", "google_id_token": "tok"})
+    me2 = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {again.json()['access_token']}"})
+    assert me2.json()["id"] == me.json()["id"]
+
+
+async def test_google_rejects_other_client_unverified_email_and_unconfigured(client, monkeypatch):
+    monkeypatch.setattr(settings, "google_client_id", "GCLIENT")
+    body = {"method": "google", "google_id_token": "tok"}
+    fake_google(monkeypatch, aud="SOMEONE_ELSES_CLIENT")
+    assert (await client.post("/api/v1/auth/login", json=body)).status_code == 401
+    fake_google(monkeypatch, email_verified="false")
+    assert (await client.post("/api/v1/auth/login", json=body)).status_code == 401
+    monkeypatch.setattr(settings, "google_client_id", "")
+    assert (await client.post("/api/v1/auth/login", json=body)).status_code == 503
+    assert (await client.post("/api/v1/auth/login", json={"method": "google"})).status_code == 422
+
+
+async def test_google_cannot_enter_an_admin_account(client, monkeypatch, make_user):
+    admin = await make_user(Role.admin)
+    monkeypatch.setattr(settings, "google_client_id", "GCLIENT")
+    fake_google(monkeypatch, email=admin.email)
+    r = await client.post("/api/v1/auth/login", json={"method": "google", "google_id_token": "tok"})
+    assert r.status_code == 403

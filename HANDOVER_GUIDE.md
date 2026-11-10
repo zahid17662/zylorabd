@@ -28,6 +28,7 @@ All backend settings live in `backend/.env`. Copy `backend/.env.example` to `bac
 | `PAYMENT_GATEWAY_BASE_URL`, `PAYMENT_GATEWAY_API_KEY` | UddoktaPay panel URL and API key. Use the sandbox while testing. |
 | `S3_ENDPOINT_URL`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`, `PUBLIC_CDN_URL` | Cloudflare R2 bucket for product media. |
 | `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET` | Facebook Login (optional). |
+| `GOOGLE_CLIENT_ID` | Google sign-in (optional). OAuth client ID of type "Web application" from Google Cloud Console. |
 | `SMS_API_URL`, `SMS_API_KEY`, `SMS_SENDER_ID` | SMS provider for OTP codes and order texts. Without it, SMS are only written to the server log. |
 
 Frontend (set in Vercel/Cloudflare Pages, or in a `frontend/.env.production`):
@@ -36,6 +37,7 @@ Frontend (set in Vercel/Cloudflare Pages, or in a `frontend/.env.production`):
 |---|---|
 | `VITE_API_URL` | API address, e.g. `https://api.zylora.com`. |
 | `VITE_FACEBOOK_APP_ID` | Same app ID as above. The "Continue with Facebook" button only appears when this is set. |
+| `VITE_GOOGLE_CLIENT_ID` | Same client ID as `GOOGLE_CLIENT_ID`. The "Continue with Google" button only appears when this is set. In Google Cloud Console add your store's address (e.g. `https://zylorabd.vercel.app`) under Authorized JavaScript origins. |
 
 ## 2. Database and migrations
 

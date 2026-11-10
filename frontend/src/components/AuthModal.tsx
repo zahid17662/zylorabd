@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { X } from 'lucide-react'
 import { api } from '../api'
 import { useAuth } from '../auth'
 import { isBdPhone } from '../data'
 import { facebookAccessToken, facebookEnabled, preloadFacebook } from '../facebook'
+import { googleEnabled, renderGoogleButton } from '../google'
 
 type Tab = 'email' | 'phone' | 'register'
 const field = 'w-full border border-line bg-white px-4 py-3 text-[14px] outline-none focus:border-ink'
@@ -21,6 +22,15 @@ export function AuthModal() {
   useEffect(() => {
     if (modal && facebookEnabled) preloadFacebook().catch(() => undefined)
   }, [modal])
+
+  // Google draws its own button; the latest `run`/`login` are read through a ref so the callback never goes stale.
+  const googleBox = useRef<HTMLDivElement>(null)
+  const onGoogle = useRef<(t: string) => void>(() => {})
+  onGoogle.current = (t) => run(() => login({ method: 'google', google_id_token: t }))
+  useEffect(() => {
+    if (!modal || !googleEnabled || !googleBox.current) return
+    renderGoogleButton(googleBox.current, (t) => onGoogle.current(t)).catch((e: Error) => setErr(e.message))
+  }, [modal, tab])
 
   if (!modal) return null
 
@@ -78,7 +88,15 @@ export function AuthModal() {
           ))}
         </div>
 
-        <form onSubmit={submit} className="mt-6 space-y-3">
+        {googleEnabled && (
+          <>
+            <div ref={googleBox} className="mt-6 flex min-h-[44px] justify-center" aria-label="Continue with Google" />
+            <div className="mt-5 flex items-center gap-3 text-[12px] text-muted">
+              <span className="h-px flex-1 bg-line" /> or <span className="h-px flex-1 bg-line" />
+            </div>
+          </>
+        )}
+        <form onSubmit={submit} className={googleEnabled ? 'mt-5 space-y-3' : 'mt-6 space-y-3'}>
           {tab === 'register' && <input className={field} placeholder="Full name" required value={f.name} onChange={set('name')} />}
           {tab !== 'phone' && (
             <>
