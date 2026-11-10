@@ -4,7 +4,7 @@ import { api } from '../api'
 import { taka } from '../data'
 import { ProductImage } from '../components/ui/ProductImage'
 import { blankForm, ProductForm, toForm, type Form } from './ProductForm'
-import { btn } from './ui'
+import { btn, PageHeader } from './ui'
 import type { Product } from './types'
 
 function Toggle({ on, label, busy, onChange }: { on: boolean; label: string; busy: boolean; onChange: (v: boolean) => void }) {
@@ -72,15 +72,12 @@ export default function Products() {
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
-        <h2 className="font-serif text-[22px] sm:text-[24px]">Products & Media</h2>
-        <button className={btn} onClick={() => setForm(blankForm())}>+ New product</button>
-      </div>
+      <PageHeader title="Products" sub={`${list.length} products`} action={<button className={`${btn} shrink-0 bg-ink !text-white hover:opacity-90`} onClick={() => setForm(blankForm())}>+ New product</button>} />
       {err && <p role="alert" className="mb-3 text-wine">{err}</p>}
       {notice && <p role="status" className="mb-3 text-[13px] text-emerald-800">{notice}</p>}
       <ul className="space-y-3 md:hidden">
         {list.map((p) => (
-          <li key={p.id} className={`rounded-lg p-4 text-[13px] ${p.is_active ? 'bg-white' : 'bg-stone-50 text-muted'}`}>
+          <li key={p.id} className={`rounded-xl border border-line p-4 text-[13px] ${p.is_active ? 'bg-white' : 'bg-stone-50 text-muted'}`}>
             <div className="flex gap-3">
               <div className="shrink-0">
                 {p.images[0] ? <ProductImage variant="admin" src={p.images[0]} /> : <div className="h-14 w-12 rounded-md bg-slate-100" />}

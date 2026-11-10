@@ -1,17 +1,21 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { AlertTriangle, Clock, ReceiptText, Wallet } from 'lucide-react'
 import { api } from '../api'
 import { taka } from '../data'
-import { btn, inp, providerLabel } from './ui'
+import { btn, inp, PageHeader, providerLabel } from './ui'
 import type { LowStock, SplitRow, Stats } from './types'
 
 const sumOrders = (rows: SplitRow[]): number => rows.reduce((n, r) => n + r.orders, 0)
 const sumRevenue = (rows: SplitRow[]): number => rows.reduce((n, r) => n + Number(r.revenue), 0)
 
-function Kpi({ label, value, tone = '' }: { label: string; value: string; tone?: string }) {
+function Kpi({ label, value, tone = '', hero = false, icon }: { label: string; value: string; tone?: string; hero?: boolean; icon: ReactNode }) {
   return (
-    <div className="rounded-lg bg-white p-4 sm:p-5">
-      <p className="text-[11px] tracking-widest text-muted uppercase sm:text-[12px]">{label}</p>
-      <p className={`mt-2 font-serif text-[22px] break-words sm:text-[28px] tabular-nums ${tone}`}>{value}</p>
+    <div className={`rounded-xl p-4 sm:p-5 ${hero ? 'col-span-2 bg-ink text-white xl:col-span-1' : 'border border-line bg-white'}`}>
+      <div className="flex items-center justify-between">
+        <p className={`text-[11px] font-medium tracking-wider uppercase sm:text-[12px] ${hero ? 'text-white/70' : 'text-muted'}`}>{label}</p>
+        <span className={`grid size-7 place-items-center rounded-full ${hero ? 'bg-white/15' : 'bg-cream text-muted'}`}>{icon}</span>
+      </div>
+      <p className={`mt-2 text-[26px] leading-none font-semibold tabular-nums sm:text-[30px] ${tone}`}>{value}</p>
     </div>
   )
 }
@@ -39,8 +43,8 @@ function SplitList({ rows, format }: { rows: SplitRow[]; format?: (key: string) 
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg bg-white p-4 sm:p-5">
-      <h3 className="mb-4 text-[12px] tracking-widest text-muted uppercase">{title}</h3>
+    <section className="rounded-xl border border-line bg-white p-4 sm:p-5">
+      <h3 className="mb-3 text-[12px] font-medium tracking-wider text-muted uppercase">{title}</h3>
       {children}
     </section>
   )
@@ -93,6 +97,7 @@ function RestockRow({ row, onDone }: { row: LowStock; onDone: () => void }) {
 export default function Overview() {
   const [s, setS] = useState<Stats | null>(null)
   const [err, setErr] = useState('')
+  const [showAll, setShowAll] = useState(false)
   const load = useCallback(() => {
     api<Stats>('/admin/stats').then(setS).catch((e: Error) => setErr(e.message))
   }, [])
@@ -107,12 +112,14 @@ export default function Overview() {
   const source = s.order_attribution_split.order_source.filter((r) => r.orders > 0)
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div>
+      <PageHeader title="Overview" sub="Store performance at a glance" />
+      <div className="space-y-4 sm:space-y-5">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <Kpi label="Total revenue (paid)" value={taka(Number(s.total_revenue))} />
-        <Kpi label="Total orders" value={String(s.total_orders)} />
-        <Kpi label="Pending fulfillment" value={String(s.pending_fulfillment)} tone={s.pending_fulfillment > 0 ? 'text-amber-800' : ''} />
-        <Kpi label="Low stock alerts" value={String(s.low_stock_variants.length)} tone={s.low_stock_variants.length > 0 ? 'text-wine' : ''} />
+        <Kpi hero icon={<Wallet className="size-3.5" />} label="Revenue (paid)" value={taka(Number(s.total_revenue))} />
+        <Kpi icon={<ReceiptText className="size-3.5" />} label="Orders" value={String(s.total_orders)} />
+        <Kpi icon={<Clock className="size-3.5" />} label="To fulfil" value={String(s.pending_fulfillment)} tone={s.pending_fulfillment > 0 ? 'text-amber-700' : ''} />
+        <Kpi icon={<AlertTriangle className="size-3.5" />} label="Low stock" value={String(s.low_stock_variants.length)} tone={s.low_stock_variants.length > 0 ? 'text-wine' : ''} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -140,11 +147,19 @@ export default function Overview() {
         {s.low_stock_variants.length === 0 ? (
           <p className="text-[13px] text-muted">Every size is comfortably stocked.</p>
         ) : (
-          <ul>
-            {s.low_stock_variants.map((r) => <RestockRow key={r.variant_id} row={r} onDone={load} />)}
-          </ul>
+          <>
+            <ul>
+              {(showAll ? s.low_stock_variants : s.low_stock_variants.slice(0, 5)).map((r) => <RestockRow key={r.variant_id} row={r} onDone={load} />)}
+            </ul>
+            {s.low_stock_variants.length > 5 && (
+              <button className={`${btn} mt-3 w-full`} onClick={() => setShowAll((v) => !v)}>
+                {showAll ? 'Show fewer' : `Show all ${s.low_stock_variants.length}`}
+              </button>
+            )}
+          </>
         )}
       </Panel>
+      </div>
     </div>
   )
 }

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import { taka } from '../data'
 import { OrderDetail } from './OrderDetail'
-import { attributionLabel, btn, inp, paymentLabel, Pill, trxId, useDebounced, when } from './ui'
+import { Search } from 'lucide-react'
+import { attributionLabel, btn, inp, PageHeader, paymentLabel, Pill, trxId, useDebounced, when } from './ui'
 import { NEXT_STATUS, type Order, type OrderStatus } from './types'
 
 const PAGE_SIZE = 25
@@ -27,7 +28,7 @@ function queryString(f: Filters, page: number): string {
 
 function Select({ label, value, options, onChange }: { label: string; value: string; options: [string, string][]; onChange: (v: string) => void }) {
   return (
-    <select className={`${inp} sm:!w-auto`} aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}>
+    <select className={`${inp} !w-auto shrink-0 !rounded-full !py-2 !text-[14px] md:!text-[13px]`} aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}>
       <option value="">{label}: all</option>
       {options.map(([v, text]) => <option key={v} value={v}>{text}</option>)}
     </select>
@@ -38,7 +39,7 @@ function StatusSelect({ order, onMove }: { order: Order; onMove: (o: Order, s: O
   const next = NEXT_STATUS[order.order_status]
   return (
     <select
-      aria-label={`Status of ${order.order_number}`} className={`${inp} sm:!w-auto sm:!py-1 sm:!text-[13px] capitalize`} value={order.order_status}
+      aria-label={`Status of ${order.order_number}`} className={`${inp} !w-auto !py-1.5 !text-[14px] capitalize md:!py-1 md:!text-[13px]`} value={order.order_status}
       disabled={next.length === 0} onClick={(e) => e.stopPropagation()}
       onChange={(e) => onMove(order, e.target.value as OrderStatus)}
     >
@@ -92,38 +93,52 @@ export default function Orders() {
 
   return (
     <div>
-      <h2 className="mb-3 font-serif text-[22px] sm:mb-4 sm:text-[24px]">Orders & Attribution</h2>
-      <div className="mb-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-        <input className={`${inp} col-span-2 sm:!w-60`} placeholder="Search order ID, name or phone" aria-label="Search orders" value={f.q} onChange={(e) => update({ q: e.target.value })} />
-        <Select label="Status" value={f.order_status} options={STATUS_OPTIONS.map((s) => [s, s.replace('_', ' ')])} onChange={(v) => update({ order_status: v })} />
-        <Select label="Payment" value={f.pay} options={PAY_OPTIONS} onChange={(v) => update({ pay: v })} />
-        <Select label="Paid?" value={f.payment_status} options={PAID_OPTIONS} onChange={(v) => update({ payment_status: v })} />
-        <Select label="Login via" value={f.login_method} options={LOGIN_OPTIONS} onChange={(v) => update({ login_method: v })} />
-        {JSON.stringify(f) !== JSON.stringify(NO_FILTERS) && <button className={`${btn} col-span-2`} onClick={() => (setPage(1), setF(NO_FILTERS))}>Clear filters</button>}
+      <PageHeader title="Orders" sub={`${total} total · tap an order for details`} />
+      <div className="sticky top-14 z-20 -mx-4 mb-3 space-y-2 bg-cream px-4 pt-1 pb-2 sm:-mx-6 sm:px-6 md:static md:mx-0 md:space-y-0 md:bg-transparent md:p-0">
+        <div className="relative md:mb-2 md:inline-block">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden />
+          <input className={`${inp} !pl-9 md:!w-72`} placeholder="Search order ID, name or phone" aria-label="Search orders" value={f.q} onChange={(e) => update({ q: e.target.value })} />
+        </div>
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0 md:pl-2">
+          <Select label="Status" value={f.order_status} options={STATUS_OPTIONS.map((s) => [s, s.replace('_', ' ')])} onChange={(v) => update({ order_status: v })} />
+          <Select label="Payment" value={f.pay} options={PAY_OPTIONS} onChange={(v) => update({ pay: v })} />
+          <Select label="Paid?" value={f.payment_status} options={PAID_OPTIONS} onChange={(v) => update({ payment_status: v })} />
+          <Select label="Login via" value={f.login_method} options={LOGIN_OPTIONS} onChange={(v) => update({ login_method: v })} />
+          {JSON.stringify(f) !== JSON.stringify(NO_FILTERS) && <button className={`${btn} shrink-0 whitespace-nowrap`} onClick={() => (setPage(1), setF(NO_FILTERS))}>Clear</button>}
+        </div>
       </div>
       {err && <p role="alert" className="mb-3 text-wine">{err}</p>}
       <ul className={`space-y-3 md:hidden ${loading ? 'opacity-70' : ''}`} aria-busy={loading}>
         {rows.map((o) => (
-          <li key={o.id} className="rounded-lg bg-white p-4 text-[13px]" onClick={() => setOpenId(o.id)}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <button className="text-[15px] font-medium underline-offset-2 hover:underline" onClick={() => setOpenId(o.id)}>{o.order_number}</button>
-                <p className="text-muted">{when(o.created_at)}</p>
+          <li key={o.id} className="overflow-hidden rounded-xl border border-line bg-white text-[13px]">
+            <button className="block w-full p-4 text-left" onClick={() => setOpenId(o.id)} aria-label={`Open order ${o.order_number}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[15px] font-semibold">{o.order_number}</p>
+                  <p className="text-[12px] text-muted">{when(o.created_at)}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-[16px] font-semibold tabular-nums">{taka(Number(o.total_amount))}</p>
+                  <Pill v={o.payment_status} className="mt-0.5 inline-block" />
+                </div>
               </div>
-              <p className="shrink-0 text-[15px] font-medium tabular-nums">{taka(Number(o.total_amount))}</p>
+              <p className="mt-3 font-medium break-words">{o.recipient_name} <span className="font-normal text-muted">· {o.shipping_phone}</span></p>
+              <div className="mt-1 space-y-0.5 text-muted">
+                {o.items.slice(0, 2).map((i, k) => <p key={k} className="truncate">{i.size} × {i.quantity} · {i.product_title}</p>)}
+                {o.items.length > 2 && <p>+{o.items.length - 2} more</p>}
+              </div>
+              <div className="mt-2.5 flex flex-wrap gap-1.5 text-[12px]">
+                <span className="rounded-full bg-cream px-2.5 py-0.5">{paymentLabel(o).split(' - ')[0]}</span>
+                <span className="rounded-full bg-cream px-2.5 py-0.5">{attributionLabel(o)}</span>
+              </div>
+            </button>
+            <div className="flex items-center justify-between gap-3 border-t border-line bg-cream/50 px-4 py-2.5">
+              <span className="text-[12px] text-muted">Status</span>
+              <StatusSelect order={o} onMove={move} />
             </div>
-            <p className="mt-2 break-words">{o.recipient_name} · <span className="text-muted">{o.shipping_phone}</span></p>
-            <div className="mt-1 text-muted">{o.items.map((i, k) => <p key={k} className="break-words">{i.size} × {i.quantity} · {i.product_title}</p>)}</div>
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <Pill v={o.payment_status} />
-              <span>{paymentLabel(o).split(' - ')[0]}</span>
-              <span className="rounded-full bg-cream px-2.5 py-0.5">{attributionLabel(o)}</span>
-            </div>
-            {trxId(o) && <p className="mt-1 text-[12px] break-all text-muted">trxID {trxId(o)}</p>}
-            <div className="mt-3"><StatusSelect order={o} onMove={move} /></div>
           </li>
         ))}
-        {!loading && rows.length === 0 && <li className="rounded-lg bg-white px-4 py-10 text-center text-[13px] text-muted">No orders match.</li>}
+        {!loading && rows.length === 0 && <li className="rounded-xl border border-line bg-white px-4 py-10 text-center text-[13px] text-muted">No orders match.</li>}
       </ul>
       <div className={`hidden overflow-x-auto rounded-lg bg-white md:block ${loading ? 'opacity-70' : ''}`} aria-busy={loading}>
         <table className="w-full text-left text-[13px]">
@@ -151,7 +166,7 @@ export default function Orders() {
         </table>
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[13px] text-muted">
-        <span>{total} orders</span>
+        <span>Page {page} · {total} orders</span>
         <div className="flex gap-2">
           <button className={btn} disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</button>
           <button className={btn} disabled={page * PAGE_SIZE >= total} onClick={() => setPage(page + 1)}>Next</button>

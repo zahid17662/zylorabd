@@ -24,8 +24,9 @@ export function OrderDetail({ orderId, onClose }: { orderId: string; onClose: ()
   }, [orderId, onClose])
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-3 sm:p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label="Order details" onClick={(e) => e.stopPropagation()} className="mx-auto my-2 w-full max-w-[720px] rounded-lg bg-white p-4 sm:my-4 sm:p-7">
+    <div className="fixed inset-0 z-50 flex items-end bg-black/40 sm:block sm:overflow-y-auto sm:p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-label="Order details" onClick={(e) => e.stopPropagation()} className="mx-auto max-h-[92svh] w-full max-w-[720px] overflow-y-auto rounded-t-2xl bg-white p-4 pb-8 sm:my-4 sm:max-h-none sm:overflow-visible sm:rounded-lg sm:p-7">
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line sm:hidden" aria-hidden />
         {err && <p role="alert" className="text-wine">{err}</p>}
         {!o && !err && <p className="text-muted">Loading…</p>}
         {o && (
