@@ -12,6 +12,8 @@ htmlcov/
 .env
 .env.*
 !.env.example
+# Public, build-time storefront settings only (no secrets): lets any host build the site without dashboard variables
+!frontend/.env.production
 backend/.env
 backend/.env.*
 !backend/.env.example
