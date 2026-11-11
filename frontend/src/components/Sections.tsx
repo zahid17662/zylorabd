@@ -3,11 +3,11 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { collections, creations, img, services, type Product } from '../data'
 import { ProductCard } from './ProductCard'
 
-export function SectionTitle({ title, sub, link }: { title: string; sub?: string; link?: { label: string; href: string } }) {
+export function SectionTitle({ title, sub, link, compact }: { title: string; sub?: string; link?: { label: string; href: string }; compact?: boolean }) {
   return (
     <div className="mb-5 text-center md:mb-8">
       {sub && <p className="caps mb-3 !text-[11px] text-muted">{sub}</p>}
-      <h2 className="font-serif text-[32px] leading-tight font-normal md:text-[44px]">{title}</h2>
+      <h2 className={`font-serif leading-tight font-normal md:text-[44px] ${compact ? 'px-6 text-[24px]' : 'text-[32px]'}`}>{title}</h2>
       {link && (
         <a href={link.href} className="link-line mt-4 inline-block text-[14px]">
           {link.label}
@@ -24,8 +24,23 @@ export function Creations() {
 
   return (
     <section id="creations" className="scroll-mt-20 py-8 md:py-14">
-      <SectionTitle title="Explore a Selection of Zylora’s Creations" />
-      <div className="relative">
+      <SectionTitle compact title="Explore a Selection of Zylora’s Creations" />
+
+      {/* Phone: round category thumbnails, wrapped and centred */}
+      <ul className="flex flex-wrap justify-center gap-x-3 gap-y-5 px-3 md:hidden">
+        {creations.map((c) => (
+          <li key={c.name} className="w-[calc(25%-0.6rem)]">
+            <a href="#new-arrivals" className="group block text-center">
+              <span className="block aspect-square overflow-hidden rounded-full border border-line bg-cream">
+                <img src={img(c.image, 240, 240)} alt="" loading="lazy" decoding="async" className="size-full object-cover transition duration-500 group-active:scale-105" />
+              </span>
+              <span className="mt-2 block text-[11.5px] leading-tight">{c.name}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <div className="relative hidden md:block">
         <div ref={track} className="no-scrollbar flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth px-4 md:gap-3 md:px-10">
           {creations.map((c) => (
             <a key={c.name} href="#new-arrivals" className="group w-[62%] shrink-0 snap-start sm:w-[38%] md:w-[24%] lg:w-[19%]">
