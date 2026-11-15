@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     facebook_app_secret: str = ""
     google_client_id: str = ""  # OAuth "Web application" client id; enables Continue with Google
 
+    # Supabase Auth (optional). When both are set the API also accepts Supabase access tokens and mirrors
+    # password users into auth.users so they can sign in through Supabase. Both values are public.
+    supabase_url: str = ""  # https://<project-ref>.supabase.co
+    supabase_publishable_key: str = ""  # sb_publishable_... (or the legacy anon key)
+
     sms_api_url: str = ""
     sms_api_key: str = ""
     sms_sender_id: str = ""
@@ -69,6 +74,10 @@ class Settings(BaseSettings):
         if self.s3_endpoint_url and "<" not in self.s3_endpoint_url:
             return self.s3_endpoint_url.rstrip("/")
         return f"https://{self.r2_account_id}.r2.cloudflarestorage.com" if self.r2_account_id else ""
+
+    @property
+    def supabase_auth_enabled(self) -> bool:
+        return bool(self.supabase_url and self.supabase_publishable_key)
 
     @property
     def uddoktapay_enabled(self) -> bool:

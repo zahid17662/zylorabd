@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, tokens } from './api'
+import { signIn } from './signin'
+import { sbLogout } from './supabaseAuth'
 
 export type User = { id: string; name: string; email: string | null; phone: string | null; role: string }
 type Ctx = {
@@ -35,13 +37,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         modal,
         openLogin: () => setModal(true),
         closeLogin: () => setModal(false),
-        login: async (body) => finish(await api('/auth/login', { body })),
+        login: async (body) => {
+          setUser(await signIn(body))
+          setModal(false)
+        },
         register: async (name, email, password) => finish(await api('/auth/register', { body: { name, email, password } })),
         logout: async () => {
           const t = tokens.get()
           tokens.set(null)
           setUser(null)
-          if (t) await api('/auth/logout', { body: { refresh_token: t.refresh_token } }).catch(() => {})
+          if (t?.kind === 'sb') sbLogout(t.access_token)
+          else if (t) await api('/auth/logout', { body: { refresh_token: t.refresh_token } }).catch(() => {})
         },
       }}
     >

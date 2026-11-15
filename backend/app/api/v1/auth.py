@@ -17,6 +17,7 @@ from app.core.security import (
     create_access_token, generate_otp, hash_password, new_refresh_token, now, sha256, verify_password,
 )
 from app.services.sms import send_sms
+from app.services.supabase_auth import sync_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -52,7 +53,9 @@ async def register(body: RegisterIn, db: AsyncSession = Depends(get_db)):
     except IntegrityError:
         await db.rollback()
         raise HTTPException(status.HTTP_409_CONFLICT, "Email already registered")
-    return await issue_tokens(db, user, AuthProvider.email)
+    tokens = await issue_tokens(db, user, AuthProvider.email)
+    await sync_user(db, user.id)  # lets the new customer also sign in through Supabase Auth
+    return tokens
 
 
 @router.post("/otp/request", status_code=202, dependencies=[Depends(rate_limit("otp", 6, 60))])
@@ -182,7 +185,10 @@ async def login(body: LoginIn, db: AsyncSession = Depends(get_db)):
         AuthProvider.google: _login_google,
     }[body.method]
     user = await handler(body, db)
-    return await issue_tokens(db, user, body.method)
+    tokens = await issue_tokens(db, user, body.method)
+    if body.method == AuthProvider.google:
+        await sync_user(db, user.id)  # first Google sign-in creates the row; mirror it (no-op when already there)
+    return tokens
 
 
 @router.post("/refresh", response_model=TokenOut)
@@ -234,4 +240,8 @@ async def change_password(body: ChangePasswordIn, principal: Principal = Depends
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "New password must be different from the current one")
     user.password_hash = hash_password(body.new_password)
     await db.execute(update(RefreshToken).where(RefreshToken.user_id == user.id, RefreshToken.revoked_at.is_(None)).values(revoked_at=now()))
-    return await issue_tokens(db, user, AuthProvider(principal.login_method))
+    login_method = AuthProvider(principal.login_method)
+    tokens = await issue_tokens(db, user, login_method)
+    # Same new password in Supabase Auth, and its sessions end too (this client gets the fresh tokens above).
+    await sync_user(db, user.id, sign_out_everywhere=True)
+    return tokens

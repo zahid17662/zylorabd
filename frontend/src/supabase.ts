@@ -5,8 +5,10 @@ import type { ApiProduct } from './api'
  * Row Level Security allows anon SELECT on active products only; the publishable key is public by design.
  * Writes, orders and auth still go through the FastAPI backend.
  */
-const URL_ = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '')
-const KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
+export const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '')
+export const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
+const URL_ = SUPABASE_URL
+const KEY = SUPABASE_KEY
 
 /** 'supabase' (default when configured) or 'api'. Flip VITE_PRODUCTS_SOURCE=api to go back to FastAPI. */
 export const productsFromSupabase =

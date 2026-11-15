@@ -1,10 +1,12 @@
 import { SIZES, type Product, type Size } from './data'
+import { sbRefresh } from './supabaseAuth'
 
 // Production defaults to same-origin relative paths (Netlify proxies /api/* to the backend); dev hits localhost.
 export const API = (import.meta.env.VITE_API_URL as string | undefined) ?? (import.meta.env.PROD ? '' : 'http://localhost:8000')
 const BASE = API ? `${API}/api/v1` : '/api/v1'
 
-type Tokens = { access_token: string; refresh_token: string }
+/** `kind: 'sb'` marks Supabase Auth tokens; absent means tokens issued by our own API. */
+export type Tokens = { access_token: string; refresh_token: string; kind?: 'sb' }
 const KEY = 'zylora.tokens'
 
 export const tokens = {
@@ -38,6 +40,17 @@ let refreshing: Promise<boolean> | null = null
 function refresh(): Promise<boolean> {
   const t = tokens.get()
   if (!t) return Promise.resolve(false)
+  if (t.kind === 'sb') {
+    refreshing ??= sbRefresh(t.refresh_token)
+      .then((fresh) => {
+        tokens.set(fresh)
+        return fresh !== null
+      })
+      .finally(() => {
+        refreshing = null
+      })
+    return refreshing
+  }
   refreshing ??= fetch(`${BASE}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

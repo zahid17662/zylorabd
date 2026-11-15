@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { api, ApiError, tokens } from '../api'
+import { signIn } from '../signin'
 import { inp } from './ui'
 import type { User } from './types'
 
@@ -18,8 +19,7 @@ function Login({ onDone, denied, notice }: { onDone: (u: User) => void; denied: 
     setBusy(true)
     setErr('')
     try {
-      tokens.set(await api('/auth/login', { body: { method: 'email', email, password } }))
-      const me = await api<User>('/auth/me')
+      const me = (await signIn({ method: 'email', email, password }, { requireProfile: true })) as User
       if (me.role !== 'admin') {
         tokens.set(null)
         setErr('This account is not an admin.')
