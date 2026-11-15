@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { CheckCircle2, X } from 'lucide-react'
-import { api, captureAttribution, type OrderResult } from '../api'
+import { captureAttribution } from '../api'
+import { placeOrder } from '../placeOrder'
 import { useAuth } from '../auth'
 import { useCatalog } from '../catalog'
 import { unitPrice, useCart } from '../cart'
@@ -37,14 +38,12 @@ export function CheckoutModal() {
     setBusy(true)
     setErr('')
     try {
-      const res = await api<OrderResult>('/orders/checkout', {
-        body: {
-          items: lines.map((l) => ({ variant_id: l.product.variantIds[l.size], quantity: l.qty })),
-          shipping: { recipient_name: f.name, phone: f.phone, address: f.address, zone },
-          payment_method: pay === 'cod' ? 'cod' : 'online',
-          online_provider: pay === 'cod' ? undefined : pay,
-          attribution: captureAttribution(),
-        },
+      const res = await placeOrder({
+        items: lines.map((l) => ({ variant_id: l.product.variantIds[l.size], quantity: l.qty })),
+        shipping: { recipient_name: f.name, phone: f.phone, address: f.address, zone },
+        payment_method: pay === 'cod' ? 'cod' : 'online',
+        online_provider: pay === 'cod' ? undefined : pay,
+        attribution: captureAttribution(),
       })
       clear()
       reload()

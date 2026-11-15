@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from sqlalchemy import (
     Boolean, CheckConstraint, DateTime, Enum, ForeignKey, Index, Integer, Numeric, String, Text,
-    UniqueConstraint, func,
+    UniqueConstraint, func, text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -75,6 +75,8 @@ class Order(Base):
     shipping_address: Mapped[str] = mapped_column(Text)
     delivery_zone: Mapped[DeliveryZone] = mapped_column(Enum(DeliveryZone, name="delivery_zone"))
     stock_released: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Client-chosen key so a retried checkout returns the same order instead of creating a second one.
+    idempotency_key: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -85,6 +87,7 @@ class Order(Base):
     __table_args__ = (
         # Admin dashboard filters: status + payment mode + traffic source, newest first
         Index("ix_orders_admin_filter", "order_status", "payment_method", "order_source", "created_at"),
+        Index("uq_orders_user_idempotency", "user_id", "idempotency_key", unique=True, postgresql_where=text("idempotency_key IS NOT NULL")),
     )
 
 
