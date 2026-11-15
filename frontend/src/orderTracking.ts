@@ -14,7 +14,7 @@ export type TrackedOrder = {
   total_amount: string
   recipient_name: string
   shipping_address: string | null // only for a signed-in customer's own orders
-  items: { product_title: string; size: string; quantity: number; unit_price: string }[]
+  items: { product_title: string; size: string; quantity: number; unit_price: string; image?: string | null }[]
   events: { status: TrackedOrder['order_status']; at: string }[]
 }
 
