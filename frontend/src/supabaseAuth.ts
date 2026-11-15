@@ -69,3 +69,56 @@ export function sbLogout(accessToken: string): void {
     headers: { apikey: SUPABASE_KEY as string, Authorization: `Bearer ${accessToken}` },
   }).catch(() => {})
 }
+
+export type PasswordChange = { ok: true; tokens: Tokens } | { ok: false; message: string } | null
+
+/** Email address inside an access token (the token is ours to read; GoTrue verified it already). */
+function emailOf(accessToken: string): string | null {
+  try {
+    const payload = JSON.parse(atob(accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))) as { email?: string }
+    return payload.email ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Change the signed-in user's password straight in Supabase Auth: check the current password by signing in with it,
+ * set the new one, sign every other device out, and hand back this session's fresh tokens.
+ * Returns null when Supabase could not be used at all (nothing changed: the caller uses the API instead);
+ * a wrong current password or a refused new password comes back as { ok: false, message }.
+ */
+export async function sbChangePassword(accessToken: string, current: string, next: string): Promise<PasswordChange> {
+  if (!supabaseAuthEnabled) return null
+  const email = emailOf(accessToken)
+  if (!email) return null
+  let signIn: Response
+  try {
+    signIn = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY as string },
+      body: JSON.stringify({ email, password: current }),
+    })
+  } catch {
+    return null
+  }
+  if (signIn.status === 400) return { ok: false, message: 'Current password is incorrect' }
+  if (!signIn.ok) return null
+  const fresh = (await signIn.json()) as SbSession
+  if (!fresh.access_token || !fresh.refresh_token) return null
+  const auth = { 'Content-Type': 'application/json', apikey: SUPABASE_KEY as string, Authorization: `Bearer ${fresh.access_token}` }
+  let upd: Response
+  try {
+    upd = await fetch(`${SUPABASE_URL}/auth/v1/user`, { method: 'PUT', headers: auth, body: JSON.stringify({ password: next }) })
+  } catch {
+    return { ok: false, message: 'The connection dropped before the password was confirmed. Try signing in with the new password; if that fails, the old one still works.' }
+  }
+  if (!upd.ok) {
+    const e = (await upd.json().catch(() => ({}))) as { msg?: string; message?: string; error_code?: string }
+    if (e.error_code === 'same_password') return { ok: false, message: 'New password must be different from the current one' }
+    if (upd.status >= 500) return null
+    return { ok: false, message: e.msg ?? e.message ?? 'The new password was not accepted' }
+  }
+  await fetch(`${SUPABASE_URL}/auth/v1/logout?scope=others`, { method: 'POST', headers: auth }).catch(() => undefined) // best effort
+  return { ok: true, tokens: toTokens(fresh) }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { X } from 'lucide-react'
 import { api, tokens } from '../api'
+import { sbChangePassword } from '../supabaseAuth'
 import { btn, inp, label } from './ui'
 
 const MIN = 8
@@ -26,8 +27,12 @@ export function ChangePassword({ onClose }: { onClose: () => void }) {
     if (next !== confirm) return setErr('The new passwords do not match.')
     setBusy(true)
     try {
-      // Other devices are signed out by the server; this session receives fresh tokens.
-      tokens.set(await api('/auth/change-password', { method: 'POST', body: { current_password: current, new_password: next } }))
+      // Other devices are signed out; this session receives fresh tokens.
+      const t = tokens.get()
+      const viaSupabase = t?.kind === 'sb' ? await sbChangePassword(t.access_token, current, next) : null
+      if (viaSupabase?.ok === false) return setErr(viaSupabase.message)
+      if (viaSupabase?.ok) tokens.set(viaSupabase.tokens)
+      else tokens.set(await api('/auth/change-password', { method: 'POST', body: { current_password: current, new_password: next } }))
       setDone(true)
     } catch (e) {
       setErr((e as Error).message)
