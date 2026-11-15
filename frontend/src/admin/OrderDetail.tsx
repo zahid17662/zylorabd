@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import { api } from '../api'
+import { adminApi as api } from '../adminApi'
 import { taka } from '../data'
 import { OrderSlip } from './OrderSlip'
 import { attributionLabel, codCollectible, paymentLabel, Pill, trxId, when } from './ui'

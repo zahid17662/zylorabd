@@ -23,5 +23,6 @@
 
 ## Status notes (update as work lands)
 - Backend tests: 47 passing in `backend/tests/` (checkout race, webhooks, auth, admin, sweeper), 92% coverage. They use a throwaway schema (locally) or a Postgres service container (GitHub Actions) and never touch real data. Run: `cd backend && pytest --cov=app`.
+- Admin panel (step 4): with a Supabase session it calls Postgres functions `admin_*` (Alembic 0007, `frontend/src/adminApi.ts`); each refuses non-admins and Google-signed-in admins. Tables stay closed to the REST API. R2 presigned uploads and change-password still use the API. `VITE_ADMIN_SOURCE=api` reverts.
 - Storefront: product page (gallery, lazy video, live stock size pills), Facebook button (needs `VITE_FACEBOOK_APP_ID`), payment return page, BD phone validation are built.
 - Still needs real credentials to verify: R2 uploads, UddoktaPay sandbox, SMS provider, Facebook app. See `HANDOVER_GUIDE.md` and `PLAN.md`.

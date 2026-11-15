@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { AlertTriangle, Clock, ReceiptText, Wallet } from 'lucide-react'
-import { api } from '../api'
+import { adminApi as api } from '../adminApi'
 import { taka } from '../data'
 import { btn, inp, PageHeader, providerLabel } from './ui'
 import type { LowStock, SplitRow, Stats } from './types'

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Video } from 'lucide-react'
-import { api } from '../api'
+import { adminApi as api } from '../adminApi'
 import { taka } from '../data'
 import { ProductImage } from '../components/ui/ProductImage'
 import { blankForm, ProductForm, toForm, type Form } from './ProductForm'

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api } from '../api'
+import { adminApi as api } from '../adminApi'
 import { taka } from '../data'
 import { OrderDetail } from './OrderDetail'
 import { Search } from 'lucide-react'

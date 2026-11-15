@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { api } from '../api'
+import { adminApi as api } from '../adminApi'
 import { ImageField, SizeMatrix, VideoField, DEFAULT_SIZES } from './ProductMedia'
 import { btn, inp, label } from './ui'
 import type { Product, Variant } from './types'
