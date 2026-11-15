@@ -1,17 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ExternalLink } from 'lucide-react'
 import { activeGroupId, isActive, NAV, type NavGroup, type NavLeaf, type NavLink } from './nav'
 
 const row = 'flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-left text-[14px] whitespace-nowrap'
 
 function LeafLink({ item, pathname, nested }: { item: NavLeaf; pathname: string; nested?: boolean }) {
-  const active = isActive(item, pathname)
+  const active = !item.external && isActive(item, pathname)
   const tone = nested
     ? active ? 'bg-cream font-medium text-ink' : 'text-muted hover:bg-cream hover:text-ink'
     : active ? 'bg-ink text-white' : 'text-muted hover:bg-cream'
+  const className = `${row} ${tone} ${nested ? 'py-2 pl-10 text-[13px]' : ''}`
+  if (item.external) {
+    return (
+      <a href={item.to} target="_blank" rel="noopener noreferrer" className={className}>
+        <span className="flex-1">{item.label}</span>
+        <ExternalLink className="size-3.5 shrink-0" aria-hidden />
+      </a>
+    )
+  }
   return (
-    <Link to={item.to} aria-current={active ? 'page' : undefined} className={`${row} ${tone} ${nested ? 'py-2 pl-10 text-[13px]' : ''}`}>
+    <Link to={item.to} aria-current={active ? 'page' : undefined} className={className}>
       {!nested && <Icon item={item as NavLink} />}
       {item.label}
     </Link>
@@ -66,13 +75,13 @@ export default function AdminNav({ pathname }: { pathname: string }) {
 
   return (
     <nav aria-label="Admin sections" className="flex flex-col gap-1 px-3">
-      {NAV.map((entry) =>
-        entry.kind === 'link' ? (
-          <LeafLink key={entry.to} item={entry} pathname={pathname} />
-        ) : (
-          <Group key={entry.id} group={entry} pathname={pathname} open={open.has(entry.id)} onToggle={() => toggle(entry.id)} />
-        ),
-      )}
+      {NAV.map((entry) => {
+        if (entry.kind === 'heading') {
+          return <p key={entry.label} className="mt-4 px-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted">{entry.label}</p>
+        }
+        if (entry.kind === 'link') return <LeafLink key={entry.to} item={entry} pathname={pathname} />
+        return <Group key={entry.id} group={entry} pathname={pathname} open={open.has(entry.id)} onToggle={() => toggle(entry.id)} />
+      })}
     </nav>
   )
 }

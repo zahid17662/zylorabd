@@ -14,9 +14,16 @@ const EXPECTED_URLS = [
   '/admin/inventory', '/admin/inventory/products', '/admin/inventory/products/new', '/admin/inventory/categories',
   '/admin/inventory/online-categories', '/admin/inventory/suppliers',
   '/admin/preorders', '/admin/preorders/new', '/admin/preorders/products/new', '/admin/preorders/online',
+  '/admin/couriers', '/admin/expenses', '/admin/reports', '/admin/activity-log', '/admin/settings',
+  '/admin/ecommerce/home-page', '/admin/ecommerce/hero', '/admin/ecommerce/discounts', '/admin/ecommerce/coupons',
+  '/admin/ecommerce/product-status', '/admin/ecommerce/delivery-charges', '/admin/ecommerce/promo-modals',
 ]
 
-const urls = NAV.flatMap((e) => (e.kind === 'link' ? [e.to] : e.items.map((i) => i.to)))
+const urls = NAV.flatMap((e) => {
+  if (e.kind === 'heading') return []
+  if (e.kind === 'link') return [e.to]
+  return e.items.filter((i) => !i.external).map((i) => i.to)
+})
 
 describe('admin menu', () => {
   it('has an entry for every requested URL, each exactly once', () => {
@@ -27,11 +34,22 @@ describe('admin menu', () => {
     expect(urls.every((u) => u === '/admin' || u.startsWith('/admin/'))).toBe(true)
   })
 
-  it('has the three groups with the requested items', () => {
+  it('links Open Ecommerce Site to the storefront in a new tab, never as an admin route', () => {
+    const site = leaf('ecommerce', 'Open Ecommerce Site')
+    expect(site.external).toBe(true)
+    expect(site.to).toBe('/')
+    expect(pageTitle('/')).toBe('Admin')
+  })
+
+  it('has the groups with the requested items', () => {
     expect(groups.map((g) => [g.label, g.items.map((i) => i.label)])).toEqual([
       ['Sales', ['Overview', 'Sales History', 'Due', 'Returns & Refunds']],
       ['Inventory', ['Dashboard', 'Products', 'Add Product', 'Categories', 'Online Categories', 'Suppliers']],
       ['Preorders', ['Dashboard', 'Create Preorder', 'Add Product', 'Online Preorders']],
+      ['Ecommerce Settings', [
+        'Home Page Settings', 'Hero Settings', 'Discount Management', 'Coupon Management',
+        'Product Status', 'Delivery Charges', 'Promotional Modals', 'Open Ecommerce Site',
+      ]],
     ])
   })
 })

@@ -1,4 +1,7 @@
-import { Boxes, CalendarClock, ChartLine, LayoutDashboard, ReceiptText, ShoppingCart, Users, type LucideIcon } from 'lucide-react'
+import {
+  Boxes, CalendarClock, ChartLine, FileBarChart, Globe, History, LayoutDashboard, ReceiptText, Settings, ShoppingCart, Truck, Users, Wallet,
+  type LucideIcon,
+} from 'lucide-react'
 
 /** Single source of truth for the admin menu: the desktop sidebar, the mobile drawer and the page titles all read it. */
 export interface NavLeaf {
@@ -6,6 +9,12 @@ export interface NavLeaf {
   to: string
   /** Extra rule for "is this item active?"; by default an item is active on its exact path. */
   match?: (pathname: string) => boolean
+  /** Leaves the admin app (opens in a new tab) instead of routing inside it. */
+  external?: boolean
+}
+export interface NavHeading {
+  kind: 'heading'
+  label: string
 }
 export interface NavLink extends NavLeaf {
   kind: 'link'
@@ -18,7 +27,7 @@ export interface NavGroup {
   icon: LucideIcon
   items: NavLeaf[]
 }
-export type NavEntry = NavLink | NavGroup
+export type NavEntry = NavLink | NavGroup | NavHeading
 
 export const PRODUCTS_PATH = '/admin/inventory/products'
 
@@ -59,6 +68,25 @@ export const NAV: NavEntry[] = [
     ],
   },
   { kind: 'link', label: 'Orders', to: '/admin/orders', icon: ReceiptText },
+  { kind: 'link', label: 'Courier Partners', to: '/admin/couriers', icon: Truck },
+  { kind: 'link', label: 'Expenses', to: '/admin/expenses', icon: Wallet },
+  { kind: 'link', label: 'Reports', to: '/admin/reports', icon: FileBarChart },
+  {
+    kind: 'group', id: 'ecommerce', label: 'Ecommerce Settings', icon: Globe,
+    items: [
+      { label: 'Home Page Settings', to: '/admin/ecommerce/home-page' },
+      { label: 'Hero Settings', to: '/admin/ecommerce/hero' },
+      { label: 'Discount Management', to: '/admin/ecommerce/discounts' },
+      { label: 'Coupon Management', to: '/admin/ecommerce/coupons' },
+      { label: 'Product Status', to: '/admin/ecommerce/product-status' },
+      { label: 'Delivery Charges', to: '/admin/ecommerce/delivery-charges' },
+      { label: 'Promotional Modals', to: '/admin/ecommerce/promo-modals' },
+      { label: 'Open Ecommerce Site', to: '/', external: true },
+    ],
+  },
+  { kind: 'heading', label: 'System' },
+  { kind: 'link', label: 'Activity Log', to: '/admin/activity-log', icon: History },
+  { kind: 'link', label: 'Settings', to: '/admin/settings', icon: Settings },
 ]
 
 /** The three screens kept on the mobile bottom bar; everything else is in the drawer. */
@@ -74,7 +102,7 @@ export function isActive(item: NavLeaf, pathname: string): boolean {
 }
 
 export function activeGroupId(pathname: string): string | null {
-  const group = NAV.find((e): e is NavGroup => e.kind === 'group' && e.items.some((i) => isActive(i, pathname)))
+  const group = NAV.find((e): e is NavGroup => e.kind === 'group' && e.items.some((i) => !i.external && isActive(i, pathname)))
   return group?.id ?? null
 }
 
@@ -83,7 +111,7 @@ export function pageTitle(pathname: string): string {
   for (const entry of NAV) {
     if (entry.kind === 'link' && isActive(entry, pathname)) return entry.label
     if (entry.kind === 'group') {
-      const hit = entry.items.find((i) => isActive(i, pathname))
+      const hit = entry.items.find((i) => !i.external && isActive(i, pathname))
       if (hit) return `${entry.label}: ${hit.label}`
     }
   }

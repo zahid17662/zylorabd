@@ -1,4 +1,4 @@
 -r requirements.txt
 pytest
-pytest-asyncio
+pytest-asyncio>=0.26  # pytest.ini sets asyncio_default_test_loop_scope, added in 0.26
 pytest-cov

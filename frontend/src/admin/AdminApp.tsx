@@ -50,6 +50,23 @@ export default function AdminApp() {
               <Route path="online" element={<ComingSoon title="Online preorders" />} />
             </Route>
 
+            <Route path="couriers" element={<ComingSoon title="Courier partners" note="Manage delivery partners and their rates." />} />
+            <Route path="expenses" element={<ComingSoon title="Expenses" />} />
+            <Route path="reports" element={<ComingSoon title="Reports" />} />
+
+            <Route path="ecommerce">
+              <Route path="home-page" element={<ComingSoon title="Home page settings" />} />
+              <Route path="hero" element={<ComingSoon title="Hero settings" note="Banners and headline on the storefront home page." />} />
+              <Route path="discounts" element={<ComingSoon title="Discount management" />} />
+              <Route path="coupons" element={<ComingSoon title="Coupon management" />} />
+              <Route path="product-status" element={<ComingSoon title="Product status" note="Choose which products are live on the storefront." />} />
+              <Route path="delivery-charges" element={<ComingSoon title="Delivery charges" />} />
+              <Route path="promo-modals" element={<ComingSoon title="Promotional modals" />} />
+            </Route>
+
+            <Route path="activity-log" element={<ComingSoon title="Activity log" note="Who changed what, and when." />} />
+            <Route path="settings" element={<ComingSoon title="Settings" />} />
+
             <Route path="*" element={<AdminNotFound />} />
           </Route>
         </Routes>
