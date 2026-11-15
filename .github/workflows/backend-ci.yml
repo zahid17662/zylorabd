@@ -58,6 +58,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
+      # The migrations from 0006 on call Supabase's auth.uid() and grant to its roles; a plain Postgres
+      # container has neither, so create small stand-ins first (never used against a real Supabase project).
+      - name: Create the Supabase stand-ins (auth.uid, roles)
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/ci/supabase_stub.sql
+
       - name: Apply migrations to an empty database
         run: alembic upgrade head
 
