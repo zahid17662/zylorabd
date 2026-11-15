@@ -1,3 +1,4 @@
+import json
 import secrets
 import string
 import uuid
@@ -5,7 +6,7 @@ from collections import defaultdict
 from decimal import Decimal
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -152,6 +153,16 @@ async def my_orders(principal: Principal = Depends(get_principal), db: AsyncSess
         .options(selectinload(Order.items)).order_by(Order.created_at.desc()).limit(100)
     )
     return list(rows)
+
+
+@router.get("/tracking")
+async def my_orders_tracking(principal: Principal = Depends(get_principal), db: AsyncSession = Depends(get_db)):
+    """Same data as the Supabase function my_orders() (items with photos, status history), for sessions issued by this API."""
+    rows = await db.execute(
+        text("SELECT public.zy_customer_order_json(id, true) FROM public.orders WHERE user_id = :uid ORDER BY created_at DESC, id LIMIT 50"),
+        {"uid": principal.user.id},
+    )
+    return [json.loads(r[0]) if isinstance(r[0], str) else r[0] for r in rows]
 
 
 @router.get("/{order_number}", response_model=OrderOut)

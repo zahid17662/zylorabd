@@ -46,7 +46,13 @@ export async function fetchMyOrders(): Promise<TrackedOrder[]> {
       /* fall through to the API */
     }
   }
-  // API sessions, or Supabase unavailable: the API list has no status history, so show the current step only.
+  // API-issued sessions, or Supabase unavailable: the API serves the same shape. An API from before that route
+  // existed only has the plain list (no photos or status history), so show the current step from that.
+  try {
+    return await api<TrackedOrder[]>('/orders/tracking')
+  } catch (e) {
+    if (e instanceof ApiError && e.status !== 404 && e.status !== 405 && e.status !== 422 && e.status < 500) throw e
+  }
   const rows = await api<(Omit<TrackedOrder, 'events'> & { items: TrackedOrder['items'] })[]>('/orders')
   return rows.map((o) => ({ ...o, events: [{ status: o.order_status, at: o.created_at }] }))
 }
