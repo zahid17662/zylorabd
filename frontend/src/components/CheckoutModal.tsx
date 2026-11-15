@@ -75,7 +75,8 @@ export function CheckoutModal() {
             <p className="mt-6 text-[12px] tracking-widest text-muted uppercase">Order ID</p>
             <p className="font-serif text-[26px]">{done.order.order_number}</p>
             <p className="mt-3 text-[14px]">Pay {taka(Number(done.order.total_amount))} in cash on delivery.</p>
-            <button onClick={close} className="mt-8 rounded-full bg-ink px-8 py-3.5 text-[14px] text-white">Continue Shopping</button>
+            <a href={`/track?order=${encodeURIComponent(done.order.order_number)}`} className="mt-6 inline-block text-[14px] underline underline-offset-4">Track this order</a>
+            <div><button onClick={close} className="mt-6 rounded-full bg-ink px-8 py-3.5 text-[14px] text-white">Continue Shopping</button></div>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-3">

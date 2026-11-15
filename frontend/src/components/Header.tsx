@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronRight, CircleUser, Heart, LayoutDashboard, LogOut, Menu, Phone, Search, ShoppingBag, User, UserPlus, X } from 'lucide-react'
+import { ChevronRight, CircleUser, Heart, LayoutDashboard, LogOut, Menu, PackageSearch, Phone, Search, ShoppingBag, User, UserPlus, X } from 'lucide-react'
 import { useCart } from '../cart'
 import { img, taka } from '../data'
 import { useAuth } from '../auth'
@@ -16,7 +16,12 @@ export const MENU = [
   { label: 'Flash Sale', href: '#eid-collection' },
 ]
 
-const SECONDARY = ['Zylora Services', 'Track Your Order', 'Size Guide', 'Contact Us']
+const SECONDARY = [
+  { t: 'Zylora Services', href: '#services' },
+  { t: 'Track Your Order', href: '/track' },
+  { t: 'Size Guide', href: '#services' },
+  { t: 'Contact Us', href: '#services' },
+]
 
 function MenuDrawer({ open, onClose, onWishlist }: { open: boolean; onClose: () => void; onWishlist: () => void }) {
   const { user, openLogin, logout } = useAuth()
@@ -52,6 +57,7 @@ function MenuDrawer({ open, onClose, onWishlist }: { open: boolean; onClose: () 
             {user ? (
               <>
                 <p className={`${row} justify-start gap-3 text-[14px]`}><CircleUser className="size-6" strokeWidth={1.3} /><span className="truncate">Hi, {user.name}</span></p>
+                <a href="/track" className={`${row} justify-start gap-3 text-[14px]`}><PackageSearch className="size-6" strokeWidth={1.3} />My orders</a>
                 {user.role === 'admin' && (
                   <a href="/admin" className={`${row} justify-start gap-3 text-[14px]`}><LayoutDashboard className="size-6" strokeWidth={1.3} />Admin dashboard</a>
                 )}
@@ -70,8 +76,8 @@ function MenuDrawer({ open, onClose, onWishlist }: { open: boolean; onClose: () 
             )}
           </div>
           <div className="mt-auto space-y-3 px-5 py-6">
-            {SECONDARY.map((t) => (
-              <a key={t} href="#services" onClick={onClose} className="block text-[13px] text-muted">{t}</a>
+            {SECONDARY.map(({ t, href }) => (
+              <a key={t} href={href} onClick={onClose} className="block text-[13px] text-muted">{t}</a>
             ))}
             <p className="pt-2 text-[13px] text-muted">
               Can we help you? <a href="tel:+8801700000000" className="text-ink underline underline-offset-4">+880 1700-000000</a>
@@ -100,8 +106,8 @@ function MenuDrawer({ open, onClose, onWishlist }: { open: boolean; onClose: () 
             ))}
           </nav>
           <div className="mt-auto space-y-3 border-t border-line pt-6">
-            {SECONDARY.map((t) => (
-              <a key={t} href="#services" onClick={onClose} className="block text-[14px] text-muted hover:text-ink">{t}</a>
+            {SECONDARY.map(({ t, href }) => (
+              <a key={t} href={href} onClick={onClose} className="block text-[14px] text-muted hover:text-ink">{t}</a>
             ))}
             <p className="pt-3 text-[13px] text-muted">
               Can we help you? <a href="tel:+8801700000000" className="text-ink underline underline-offset-4">+880 1700-000000</a>
@@ -299,6 +305,7 @@ export function Header() {
                       <p className="truncate text-[14px] font-medium">{user.name}</p>
                       <p className="truncate text-[12px] text-muted">{user.email ?? user.phone}</p>
                     </div>
+                    <a role="menuitem" href="/track" className="flex items-center gap-3 px-4 py-3 text-[14px] hover:bg-cream"><PackageSearch className="size-4" strokeWidth={1.5} />My orders</a>
                     {user.role === 'admin' && (
                       <a role="menuitem" href="/admin" className="flex items-center gap-3 px-4 py-3 text-[14px] hover:bg-cream"><LayoutDashboard className="size-4" strokeWidth={1.5} />Admin dashboard</a>
                     )}
