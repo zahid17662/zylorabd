@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, toProduct, type ApiProduct } from './api'
 import { FALLBACK_PRODUCTS, type Product } from './data'
+import { fetchSupabaseProducts, productsFromSupabase } from './supabase'
 
 /** Stale-while-revalidate catalog: always render something, refresh from the API in the background. */
 type Ctx = {
@@ -33,6 +34,19 @@ function writeCache(products: Product[]): void {
   }
 }
 
+/** Supabase first (no cold start); FastAPI is the fallback, or the primary when VITE_PRODUCTS_SOURCE=api. */
+async function loadProducts(): Promise<ApiProduct[]> {
+  const viaApi = () => api<{ items: ApiProduct[] }>('/products?page_size=100').then((r) => r.items)
+  if (!productsFromSupabase) return viaApi()
+  try {
+    const items = await fetchSupabaseProducts()
+    if (items.length > 0) return items
+  } catch (e) {
+    console.warn('[catalog] Supabase read failed, falling back to the API', e)
+  }
+  return viaApi()
+}
+
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>(() => readCache() ?? FALLBACK_PRODUCTS)
   const [syncing, setSyncing] = useState(true)
@@ -43,10 +57,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     let timer: ReturnType<typeof setTimeout> | undefined
 
     const attempt = (n: number): void => {
-      api<{ items: ApiProduct[] }>('/products?page_size=100')
-        .then((r) => {
+      loadProducts()
+        .then((items) => {
           if (!alive) return
-          const live = r.items.map(toProduct)
+          const live = items.map(toProduct)
           // Never replace a populated catalog with an empty one.
           if (live.length > 0) {
             setProducts(live)
