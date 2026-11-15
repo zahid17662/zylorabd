@@ -1,10 +1,14 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react"
+import { useLocation, useMatch, useNavigate } from "react-router-dom"
+import { useCatalog } from "./catalog"
 import type { Product, Size } from "./data"
 
 export type CartLine = { product: Product; size: Size; qty: number }
@@ -37,7 +41,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [checkout, setCheckout] = useState(false)
   const [wishlist, setWishlist] = useState<string[]>([])
-  const [viewing, setViewing] = useState<Product | null>(null)
+
+  // The product modal is driven by the URL (/product/:id), so a product has a shareable link and the back button closes it.
+  const { products } = useCatalog()
+  const match = useMatch("/product/:id")
+  const location = useLocation()
+  const navigate = useNavigate()
+  const nav = useRef({ location, navigate })
+  nav.current = { location, navigate }
+  const viewingId = match?.params.id
+  const viewing = useMemo(() => products.find((p) => p.id === viewingId) ?? null, [products, viewingId])
+  const setViewing = useCallback((p: Product | null) => {
+    const { location: here, navigate: go } = nav.current
+    const background = (here.state as { backgroundLocation?: unknown } | null)?.backgroundLocation
+    if (p) go(`/product/${encodeURIComponent(p.id)}`, { state: { backgroundLocation: background ?? here } })
+    else if (background) go(-1)
+    else go("/", { replace: true })
+  }, [])
 
   const value = useMemo<CartCtx>(() => {
     const max = (p: Product, s: Size) => p.stock[s] ?? 0
@@ -82,7 +102,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       wishlist,
       toggleWish: (id) => setWishlist((w) => (w.includes(id) ? w.filter((x) => x !== id) : [...w, id])),
     }
-  }, [lines, open, checkout, wishlist, viewing])
+  }, [lines, open, checkout, wishlist, viewing, setViewing])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

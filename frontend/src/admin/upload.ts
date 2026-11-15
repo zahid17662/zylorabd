@@ -46,7 +46,7 @@ async function uploadToSupabase(file: File, onProgress: (pct: number) => void): 
   let t = tokens.get()
   const ext = EXT[file.type]
   if (!viaSupabase || t?.kind !== 'sb' || !ext) return null
-  const path = `products/${crypto.randomUUID().replaceAll('-', '')}.${ext}`
+  const path = `products/${crypto.randomUUID().replace(/-/g, '')}.${ext}`
   const go = (token: string) =>
     send('POST', `${SUPABASE_URL}/storage/v1/object/media/${path}`, {
       apikey: SUPABASE_KEY as string, Authorization: `Bearer ${token}`, 'Content-Type': file.type, 'Cache-Control': 'max-age=31536000',

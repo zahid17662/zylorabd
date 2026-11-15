@@ -1,14 +1,26 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ApiError, tokens } from '../api'
+import { useDocumentTitle } from '../useDocumentTitle'
 import { fetchMe, signIn } from '../signin'
 import { inp } from './ui'
 import type { User } from './types'
 
-const LOGIN_PATH = '/admin/login'
-const HOME_PATH = '/admin'
-const goTo = (path: string) => location.pathname !== path && history.replaceState(null, '', path)
+export const LOGIN_PATH = '/admin/login'
+export const HOME_PATH = '/admin'
+
+/**
+ * Where to send the admin after signing in. Only same-site admin paths are accepted, so a crafted
+ * `state.from` can never redirect somewhere else.
+ */
+export function safeAdminReturn(from: unknown): string {
+  if (typeof from !== 'string') return HOME_PATH
+  if (!/^\/admin(\/|\?|#|$)/.test(from) || from.startsWith('//')) return HOME_PATH
+  return from.split(/[?#]/)[0].replace(/\/+$/, '') === LOGIN_PATH ? HOME_PATH : from
+}
 
 function Login({ onDone, denied, notice }: { onDone: (u: User) => void; denied: boolean; notice?: string }) {
+  useDocumentTitle('Admin sign in - Zylora')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [err, setErr] = useState(denied ? 'This account is not an admin.' : (notice ?? ''))
@@ -67,9 +79,19 @@ export function AdminProtectedRoute({ children }: { children: (user: User, signO
   }, [])
 
   const isAdmin = user?.role === 'admin'
+  const location = useLocation()
+  const navigate = useNavigate()
+  const onLogin = location.pathname.replace(/\/+$/, '') === LOGIN_PATH
   useEffect(() => {
-    if (!checking) goTo(isAdmin ? HOME_PATH : LOGIN_PATH)
-  }, [checking, isAdmin])
+    if (checking) return
+    if (isAdmin && onLogin) {
+      // Signed in on the login page: continue to the page that was asked for.
+      navigate(safeAdminReturn((location.state as { from?: unknown } | null)?.from), { replace: true })
+    } else if (!isAdmin && !onLogin) {
+      // Remember what was asked for, so signing in returns there.
+      navigate(LOGIN_PATH, { replace: true, state: { from: location.pathname + location.search } })
+    }
+  }, [checking, isAdmin, onLogin, location.pathname, location.search, location.state, navigate])
 
   if (checking) return <p className="p-10 text-muted">Loading…</p>
   if (!user || !isAdmin) return <Login denied={denied} notice={loadError} onDone={(u) => (setDenied(false), setUser(u))} />

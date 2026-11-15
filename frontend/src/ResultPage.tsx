@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import { useDocumentTitle } from './useDocumentTitle'
 import { CheckCircle2, XCircle } from 'lucide-react'
 
 const COPY = {
@@ -25,15 +27,16 @@ export default function ResultPage() {
   const raw = new URLSearchParams(location.search).get('outcome') ?? ''
   const outcome: Outcome = raw in COPY ? (raw as Outcome) : 'failed'
   const { icon: Icon, title, text } = COPY[outcome]
+  useDocumentTitle(`${title} - Zylora`)
   return (
     <main className="grid min-h-screen place-items-center bg-cream px-4">
       <div className="w-full max-w-[460px] bg-white p-10 text-center">
         <Icon className={`mx-auto size-12 ${outcome === 'success' ? 'text-ink' : 'text-wine'}`} strokeWidth={1} />
         <h1 className="mt-5 font-serif text-[32px]">{title}</h1>
         <p className="mt-3 text-[14px] leading-relaxed text-muted">{text}</p>
-        <a href="/" className="mt-8 inline-block rounded-full bg-ink px-8 py-3.5 text-[14px] text-white hover:bg-black">
+        <Link to="/" className="mt-8 inline-block rounded-full bg-ink px-8 py-3.5 text-[14px] text-white hover:bg-black">
           Continue Shopping
-        </a>
+        </Link>
       </div>
     </main>
   )

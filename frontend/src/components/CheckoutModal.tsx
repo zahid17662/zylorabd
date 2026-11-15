@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { CheckCircle2, X } from 'lucide-react'
-import { captureAttribution } from '../api'
+import { captureAttribution, type OrderResult } from '../api'
 import { placeOrder } from '../placeOrder'
 import { useAuth } from '../auth'
 import { useCatalog } from '../catalog'
@@ -32,14 +32,18 @@ export function CheckoutModal() {
     e.preventDefault()
     if (!user) return openLogin()
     if (!isBdPhone(f.phone)) return setErr('Enter a valid Bangladeshi mobile number, e.g. 01712345678')
-    if (lines.some((l) => !l.product.variantIds[l.size])) {
+    const items = lines.flatMap((l) => {
+      const variantId = l.product.variantIds[l.size]
+      return variantId ? [{ variant_id: variantId, quantity: l.qty }] : []
+    })
+    if (items.length !== lines.length) {
       return setErr('Live stock is still syncing. Please wait a moment and try again.')
     }
     setBusy(true)
     setErr('')
     try {
       const res = await placeOrder({
-        items: lines.map((l) => ({ variant_id: l.product.variantIds[l.size], quantity: l.qty })),
+        items,
         shipping: { recipient_name: f.name, phone: f.phone, address: f.address, zone },
         payment_method: pay === 'cod' ? 'cod' : 'online',
         online_provider: pay === 'cod' ? undefined : pay,

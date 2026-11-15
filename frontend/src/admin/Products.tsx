@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { Video } from 'lucide-react'
 import { adminApi as api } from '../adminApi'
 import { taka } from '../data'
 import { ProductImage } from '../components/ui/ProductImage'
-import { blankForm, ProductForm, toForm, type Form } from './ProductForm'
+import { PRODUCTS_PATH } from './nav'
+import type { ProductsOutletContext } from './ProductFormRoute'
 import { btn, PageHeader } from './ui'
 import type { Product } from './types'
 
@@ -34,14 +36,17 @@ function SizePills({ product }: { product: Product }) {
 }
 
 export default function Products() {
+  const navigate = useNavigate()
   const [list, setList] = useState<Product[]>([])
-  const [form, setForm] = useState<Form | null>(null)
+  const [loaded, setLoaded] = useState(false)
   const [err, setErr] = useState('')
   const [notice, setNotice] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
 
   const load = useCallback(() => {
-    api<Product[]>('/admin/products').then(setList).catch((e: Error) => setErr(e.message))
+    api<Product[]>('/admin/products')
+      .then((items) => (setList(items), setLoaded(true)))
+      .catch((e: Error) => (setErr(e.message), setLoaded(true)))
   }, [])
   useEffect(load, [load])
 
@@ -72,7 +77,7 @@ export default function Products() {
 
   return (
     <div>
-      <PageHeader title="Products" sub={`${list.length} products`} action={<button className={`${btn} shrink-0 bg-ink !text-white hover:opacity-90`} onClick={() => setForm(blankForm())}>+ New product</button>} />
+      <PageHeader title="Products" sub={`${list.length} products`} action={<button className={`${btn} shrink-0 bg-ink !text-white hover:opacity-90`} onClick={() => navigate(`${PRODUCTS_PATH}/new`)}>+ New product</button>} />
       {err && <p role="alert" className="mb-3 text-wine">{err}</p>}
       {notice && <p role="status" className="mb-3 text-[13px] text-emerald-800">{notice}</p>}
       <ul className="space-y-3 md:hidden">
@@ -98,7 +103,7 @@ export default function Products() {
             </div>
             <div className="mt-3"><SizePills product={p} /><p className="mt-1 text-[12px] text-muted">{p.total_stock} total</p></div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <button className={btn} disabled={busyId === p.id} onClick={() => setForm(toForm(p))}>Edit</button>
+              <button className={btn} disabled={busyId === p.id} onClick={() => navigate(`${PRODUCTS_PATH}/${p.id}/edit`)}>Edit</button>
               <button className={btn} disabled={busyId === p.id} onClick={() => archive(p)}>Archive</button>
             </div>
           </li>
@@ -134,7 +139,7 @@ export default function Products() {
                 <td className="px-4 py-2"><Toggle on={p.is_active} busy={busyId === p.id} label={`${p.title} visible in store`} onChange={(v) => setActive(p, v)} /></td>
                 <td className="px-4 py-2">
                   <div className="flex justify-end gap-1.5">
-                    <button className={btn} disabled={busyId === p.id} onClick={() => setForm(toForm(p))}>Edit</button>
+                    <button className={btn} disabled={busyId === p.id} onClick={() => navigate(`${PRODUCTS_PATH}/${p.id}/edit`)}>Edit</button>
                     <button className={btn} disabled={busyId === p.id} onClick={() => archive(p)}>Archive</button>
                   </div>
                 </td>
@@ -144,7 +149,7 @@ export default function Products() {
           </tbody>
         </table>
       </div>
-      {form && <ProductForm initial={form} onClose={() => setForm(null)} onSaved={() => (setForm(null), load())} />}
+      <Outlet context={{ list, loaded, reload: load } satisfies ProductsOutletContext} />
     </div>
   )
 }

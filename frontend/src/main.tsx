@@ -1,27 +1,13 @@
-import React, { lazy, Suspense } from "react"
+import React from "react"
 import ReactDOM from "react-dom/client"
-import App from "./App"
-import ResultPage from "./ResultPage"
-import TrackPage from "./TrackPage"
+import { BrowserRouter } from "react-router-dom"
+import { AppRoutes } from "./routes"
 import "./index.css"
 
-// The dashboard is its own chunk, so storefront visitors never download admin code.
-const AdminApp = lazy(() => import("./admin/AdminApp"))
-
-// /admin (and /admin/login) is the dashboard, /track is customer order tracking, /checkout/result is where payment gateways send the browser back,
-// everything else is the storefront.
-const path = location.pathname.replace(/\/+$/, "")
-const page =
-  path === "/admin" || path === "/admin/login" ? (
-    <Suspense fallback={<p style={{ padding: 40 }}>Loading…</p>}>
-      <AdminApp />
-    </Suspense>
-  ) : path === "/checkout/result" ? (
-    <ResultPage />
-  ) : path === "/track" ? (
-    <TrackPage />
-  ) : (
-    <App />
-  )
-
-ReactDOM.createRoot(document.getElementById("root")!).render(<React.StrictMode>{page}</React.StrictMode>)
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  </React.StrictMode>,
+)

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ChevronRight, CircleUser, Heart, LayoutDashboard, LogOut, Menu, PackageSearch, Phone, Search, ShoppingBag, User, UserPlus, X } from 'lucide-react'
 import { useCart } from '../cart'
 import { img, taka } from '../data'
@@ -57,9 +58,9 @@ function MenuDrawer({ open, onClose, onWishlist }: { open: boolean; onClose: () 
             {user ? (
               <>
                 <p className={`${row} justify-start gap-3 text-[14px]`}><CircleUser className="size-6" strokeWidth={1.3} /><span className="truncate">Hi, {user.name}</span></p>
-                <a href="/track" className={`${row} justify-start gap-3 text-[14px]`}><PackageSearch className="size-6" strokeWidth={1.3} />My orders</a>
+                <Link to="/track" className={`${row} justify-start gap-3 text-[14px]`}><PackageSearch className="size-6" strokeWidth={1.3} />My orders</Link>
                 {user.role === 'admin' && (
-                  <a href="/admin" className={`${row} justify-start gap-3 text-[14px]`}><LayoutDashboard className="size-6" strokeWidth={1.3} />Admin dashboard</a>
+                  <Link to="/admin" className={`${row} justify-start gap-3 text-[14px]`}><LayoutDashboard className="size-6" strokeWidth={1.3} />Admin dashboard</Link>
                 )}
               </>
             ) : (
@@ -305,9 +306,9 @@ export function Header() {
                       <p className="truncate text-[14px] font-medium">{user.name}</p>
                       <p className="truncate text-[12px] text-muted">{user.email ?? user.phone}</p>
                     </div>
-                    <a role="menuitem" href="/track" className="flex items-center gap-3 px-4 py-3 text-[14px] hover:bg-cream"><PackageSearch className="size-4" strokeWidth={1.5} />My orders</a>
+                    <Link role="menuitem" to="/track" className="flex items-center gap-3 px-4 py-3 text-[14px] hover:bg-cream"><PackageSearch className="size-4" strokeWidth={1.5} />My orders</Link>
                     {user.role === 'admin' && (
-                      <a role="menuitem" href="/admin" className="flex items-center gap-3 px-4 py-3 text-[14px] hover:bg-cream"><LayoutDashboard className="size-4" strokeWidth={1.5} />Admin dashboard</a>
+                      <Link role="menuitem" to="/admin" className="flex items-center gap-3 px-4 py-3 text-[14px] hover:bg-cream"><LayoutDashboard className="size-4" strokeWidth={1.5} />Admin dashboard</Link>
                     )}
                     <button role="menuitem" onClick={() => { setAcct(false); void logout() }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-[14px] hover:bg-cream"><LogOut className="size-4" strokeWidth={1.5} />Sign out</button>
                   </div>

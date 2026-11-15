@@ -5,6 +5,7 @@ import { useCart } from '../cart'
 import { img, SIZES, taka, type Product, type Size } from '../data'
 import { MediaCarousel, type Slide } from './ui/MediaCarousel'
 import { fetchSupabaseProducts, productsFromSupabase } from '../supabase'
+import { useDocumentTitle } from '../useDocumentTitle'
 
 const stockLabel = (n: number): string => (n === 0 ? 'Sold out' : n <= 5 ? `Only ${n} left` : 'In stock')
 
@@ -17,6 +18,7 @@ export function ProductModal() {
 function Detail({ base }: { base: Product }) {
   const { add, setViewing } = useCart()
   const [p, setP] = useState<Product>(base)
+  useDocumentTitle(`${p.title} - Zylora`)
   const [size, setSize] = useState<Size | null>(null)
   const [nudge, setNudge] = useState(false)
 

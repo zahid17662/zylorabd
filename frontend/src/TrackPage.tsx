@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import { useDocumentTitle } from './useDocumentTitle'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { AlertCircle, Check, ChevronLeft, PackageOpen, Phone, Search } from 'lucide-react'
 import { AuthProvider, useAuth } from './auth'
@@ -195,8 +197,8 @@ function Content() {
     <>
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex h-14 max-w-[720px] items-center justify-between px-4">
-          <a href="/" className="flex items-center gap-1 text-[14px] text-muted hover:text-ink"><ChevronLeft className="size-4" />Shop</a>
-          <a href="/" aria-label="Zylora home"><Logo className="text-[18px]" /></a>
+          <Link to="/" className="flex items-center gap-1 text-[14px] text-muted hover:text-ink"><ChevronLeft className="size-4" />Shop</Link>
+          <Link to="/" aria-label="Zylora home"><Logo className="text-[18px]" /></Link>
           {user ? (
             <button onClick={() => void logout()} className="text-[13px] text-muted underline underline-offset-4 hover:text-ink">Sign out</button>
           ) : (
@@ -264,6 +266,7 @@ function Content() {
 
 /** /track: signed-in customers see their orders (items, status progress, totals); anyone can look one up by number + phone. */
 export default function TrackPage() {
+  useDocumentTitle('My orders - Zylora')
   return (
     <AuthProvider>
       <div className="min-h-screen bg-cream"><Content /></div>
