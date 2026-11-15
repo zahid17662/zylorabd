@@ -1,5 +1,7 @@
-import { api, ApiError } from '../api'
+import { api, ApiError, tokens } from '../api'
 import { resizeImage } from '../imageResize'
+import { SUPABASE_KEY, SUPABASE_URL } from '../supabase'
+import { supabaseAuthEnabled } from '../supabaseAuth'
 
 type Presigned = { upload_url: string; public_url: string; headers: Record<string, string> }
 
@@ -17,6 +19,33 @@ function putWithProgress(url: string, headers: Record<string, string>, file: Fil
   })
 }
 
+const viaSupabase = supabaseAuthEnabled && (import.meta.env.VITE_ADMIN_SOURCE as string | undefined) !== 'api'
+
+/**
+ * Upload link from the Supabase Edge Function `media-presign` (works while the API sleeps). Returns null when the
+ * function cannot be used (no Supabase session, not deployed, network trouble) so the API link is used instead;
+ * a clear refusal (not an admin, not configured, bad file) is thrown. Asking for a link twice is harmless.
+ */
+async function presignViaSupabase(body: { content_type: string; size_bytes: number }): Promise<Presigned | null> {
+  const t = tokens.get()
+  if (!viaSupabase || t?.kind !== 'sb') return null
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/media-presign`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY as string, Authorization: `Bearer ${t.access_token}` },
+      body: JSON.stringify(body),
+    })
+    if (res.ok) return (await res.json()) as Presigned
+    if (res.status === 401 || res.status === 404 || res.status >= 500) return null
+    const e = (await res.json().catch(() => ({}))) as { detail?: string }
+    if (res.status === 503) return null // not configured here yet: the API may still be
+    throw new ApiError(res.status, e.detail ?? `Request failed (${res.status})`)
+  } catch (e) {
+    if (e instanceof ApiError) throw e
+    return null
+  }
+}
+
 export type UploadedMedia = { kind: 'image' | 'video'; url: string }
 
 /**
@@ -26,7 +55,8 @@ export type UploadedMedia = { kind: 'image' | 'video'; url: string }
 export async function uploadMedia(original: File, onProgress: (pct: number) => void): Promise<UploadedMedia> {
   const isImage = original.type.startsWith('image/')
   const file = isImage ? await resizeImage(original) : original
-  const p = await api<Presigned>('/admin/media/presigned-url', { body: { content_type: file.type, size_bytes: file.size } })
+  const req = { content_type: file.type, size_bytes: file.size }
+  const p = (await presignViaSupabase(req)) ?? (await api<Presigned>('/admin/media/presigned-url', { body: req }))
   await putWithProgress(p.upload_url, p.headers, file, onProgress)
   return { kind: isImage ? 'image' : 'video', url: p.public_url }
 }
