@@ -35,11 +35,12 @@ export function finalPrice(base: number, pct: number): string {
   return (q / 100).toFixed(2)
 }
 
-export async function fetchSupabaseProducts(): Promise<ApiProduct[]> {
+/** All active products, or just the one with this id (used to keep an open product's stock live). */
+export async function fetchSupabaseProducts(onlyId?: string): Promise<ApiProduct[]> {
   const select =
     'id,title,category,description,base_price,discount_percent,video_url,images,created_at,product_variants(id,size,stock_quantity)'
   const res = await fetch(
-    `${URL_}/rest/v1/products?select=${encodeURIComponent(select)}&is_active=eq.true&order=created_at.desc&limit=100`,
+    `${URL_}/rest/v1/products?select=${encodeURIComponent(select)}&is_active=eq.true${onlyId ? `&id=eq.${encodeURIComponent(onlyId)}` : ''}&order=created_at.desc&limit=100`,
     { headers: { apikey: KEY as string, Authorization: `Bearer ${KEY}` } },
   )
   if (!res.ok) throw new Error(`Supabase catalog request failed (${res.status})`)

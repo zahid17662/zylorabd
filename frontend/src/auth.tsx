@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, tokens } from './api'
-import { signIn } from './signin'
-import { sbLogout } from './supabaseAuth'
+import { fetchMe, signIn } from './signin'
+import { sbLogout, sbSignUp } from './supabaseAuth'
 
 export type User = { id: string; name: string; email: string | null; phone: string | null; role: string }
 type Ctx = {
@@ -10,7 +10,7 @@ type Ctx = {
   openLogin: () => void
   closeLogin: () => void
   login: (body: Record<string, unknown>) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string) => Promise<string | void>
   logout: () => Promise<void>
 }
 const C = createContext<Ctx | null>(null)
@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [modal, setModal] = useState(false)
 
-  const loadMe = useCallback(async () => setUser(await api<User>('/auth/me')), [])
+  const loadMe = useCallback(async () => setUser(await fetchMe()), [])
   useEffect(() => {
     if (tokens.get()) loadMe().catch(() => setUser(null))
   }, [loadMe])
@@ -41,7 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(await signIn(body))
           setModal(false)
         },
-        register: async (name, email, password) => finish(await api('/auth/register', { body: { name, email, password } })),
+        register: async (name, email, password) => {
+          // Supabase Auth first (no API server needed); the API's own sign-up is the fallback.
+          const r = await sbSignUp(name, email, password)
+          if (r?.ok === false) throw new Error(r.message)
+          if (r?.ok && r.tokens) {
+            tokens.set(r.tokens)
+            setUser(await fetchMe())
+            setModal(false)
+            return
+          }
+          if (r?.ok) return 'Almost done! We emailed you a link. Open it to verify your address, then sign in here.'
+          await finish(await api('/auth/register', { body: { name, email, password } }))
+        },
         logout: async () => {
           const t = tokens.get()
           tokens.set(null)

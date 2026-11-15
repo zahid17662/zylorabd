@@ -122,3 +122,39 @@ export async function sbChangePassword(accessToken: string, current: string, nex
   await fetch(`${SUPABASE_URL}/auth/v1/logout?scope=others`, { method: 'POST', headers: auth }).catch(() => undefined) // best effort
   return { ok: true, tokens: toTokens(fresh) }
 }
+
+export type SignUp = { ok: true; tokens: Tokens | null } | { ok: false; message: string } | null
+
+/**
+ * Create an account in Supabase Auth. ok+tokens = signed in at once; ok without tokens = a verification email was sent
+ * (confirm-email is on). Returns null when Supabase cannot be used at all, so the caller can use the API instead.
+ */
+export async function sbSignUp(name: string, email: string, password: string): Promise<SignUp> {
+  if (!supabaseAuthEnabled) return null
+  let res: Response
+  try {
+    res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY as string },
+      body: JSON.stringify({ email: email.trim().toLowerCase(), password, data: { name: name.trim() } }),
+    })
+  } catch {
+    return null
+  }
+  const body = (await res.json().catch(() => ({}))) as SbSession & { error_code?: string; msg?: string; message?: string }
+  if (res.ok) return { ok: true, tokens: body.access_token && body.refresh_token ? toTokens(body) : null }
+  switch (body.error_code) {
+    case 'user_already_exists':
+    case 'email_exists':
+      return { ok: false, message: 'An account with this email already exists. Sign in instead.' }
+    case 'weak_password':
+      return { ok: false, message: 'That password is too easy to guess. Try a longer, less common one.' }
+    case 'validation_failed':
+    case 'email_address_invalid':
+      return { ok: false, message: 'Enter a valid email address.' }
+    case 'over_email_send_rate_limit':
+    case 'over_request_rate_limit':
+      return { ok: false, message: 'Too many attempts. Please wait a minute and try again.' }
+  }
+  return res.status >= 500 || res.status === 404 ? null : { ok: false, message: body.msg ?? body.message ?? 'Could not create the account. Please try again.' }
+}

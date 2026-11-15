@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { api, ApiError, tokens } from '../api'
-import { signIn } from '../signin'
+import { ApiError, tokens } from '../api'
+import { fetchMe, signIn } from '../signin'
 import { inp } from './ui'
 import type { User } from './types'
 
@@ -56,7 +56,7 @@ export function AdminProtectedRoute({ children }: { children: (user: User, signO
 
   useEffect(() => {
     if (!tokens.get()) return
-    api<User>('/auth/me')
+    fetchMe()
       .then((u) => (setUser(u), setDenied(u.role !== 'admin')))
       .catch((e: unknown) => {
         setUser(null)

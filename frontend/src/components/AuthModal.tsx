@@ -49,7 +49,7 @@ export function AuthModal() {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     run(() => {
-      if (tab === 'register') return register(f.name, f.email, f.password)
+      if (tab === 'register') return register(f.name, f.email, f.password).then((m) => { if (m) { setInfo(m); setTab('email') } })
       if (tab === 'email') return login({ method: 'email', email: f.email, password: f.password })
       if (!isBdPhone(f.phone)) throw new Error('Enter a valid mobile number, e.g. 01712345678')
       if (!/^\d{6}$/.test(f.otp)) throw new Error('Enter the 6-digit code from the SMS')

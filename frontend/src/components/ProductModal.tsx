@@ -4,6 +4,7 @@ import { api, toProduct, type ApiProduct } from '../api'
 import { useCart } from '../cart'
 import { img, SIZES, taka, type Product, type Size } from '../data'
 import { MediaCarousel, type Slide } from './ui/MediaCarousel'
+import { fetchSupabaseProducts, productsFromSupabase } from '../supabase'
 
 const stockLabel = (n: number): string => (n === 0 ? 'Sold out' : n <= 5 ? `Only ${n} left` : 'In stock')
 
@@ -23,7 +24,10 @@ function Detail({ base }: { base: Product }) {
   useEffect(() => {
     let alive = true
     const load = () =>
-      api<ApiProduct>(`/products/${base.id}`)
+      (productsFromSupabase
+        ? fetchSupabaseProducts(base.id).then((r) => (r[0] ? r[0] : Promise.reject(new Error('gone'))))
+        : api<ApiProduct>(`/products/${base.id}`)
+      )
         .then((d) => alive && setP(toProduct(d)))
         .catch(() => undefined)
     load()
